@@ -1,0 +1,4 @@
+name: dots_canvas
+description: A custom element
+dependencies:
+  polymer: '>=0.11.0 <0.12.0'

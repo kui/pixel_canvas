@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Sample Usage Dots Canvas</title>
+    <script src="packages/web_components/platform.js"></script>
+    <script src="packages/web_components/dart_support.js"></script>
+
+    <link rel="import" href="packages/polymer/polymer.html">
+    <link rel="import" href="packages/dots_canvas/dots_canvas.html">
+
+    <script type="application/dart">export 'package:polymer/init.dart';</script>
+    <script src="packages/browser/dart.js"></script>
+  </head>
+  <body bgcolor="#ccc">
+
+    <!-- -----------------------------------------
+      Sample
+    ------------------------------------------ -->
+    <dots-canvas verticalDots="10" horizontalDots="10" dotSize="50">
+      [
+        ["green"],
+        ["red", null, "blue"],
+        ["rgb(255, 128, 128)", "rgb(128, 255, 128)", "rgb(128, 128, 255)"],
+        [null, null, "#f00", "#333", "#ffffff", "#abab00"],
+        null,
+        [],
+        ["", ""],
+        ["rgba(0, 255, 255, 0.2)",
+         "rgba(0, 255, 255, 0.4)",
+         "rgba(0, 255, 255, 0.6)",
+         "rgba(0, 255, 255, 0.8)",
+         "rgba(0, 255, 255, 1.0)"]
+      ]
+    </dots-canvas>
+
+  </body>
+</html>
