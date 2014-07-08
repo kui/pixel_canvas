@@ -22,7 +22,10 @@ class DotsCanvasElement extends PolymerElement {
   @published
   bool noGridlines = false;
 
+  @published
   String gridlineColor = '#999';
+
+  @published
   int gridlineWidth = 1;
 
   CanvasElement canvas;
@@ -38,7 +41,7 @@ class DotsCanvasElement extends PolymerElement {
       dots = new Dots(verticalDots, horizontalDots);
     } else {
       dots =
-          new Dots.fromStringMatrix(matrix, verticalDots, horizontalDots);
+          new Dots.fromColorMatrix(matrix, verticalDots, horizontalDots);
     }
 
     onPropertyChange(this, #noGridlines, onNoGridlinesChange);
@@ -80,10 +83,6 @@ class DotsCanvasElement extends PolymerElement {
   }
 
   void renderGridlines() {
-    canvasContext
-        ..beginPath()
-        ..moveTo(0, 0);
-
     // horizontal gridlines
     for (int i = 0; i < verticalDots + 1; i++) {
       var y = dotSize * i;
@@ -107,11 +106,11 @@ class DotsCanvasElement extends PolymerElement {
   }
 
   void renderDots() {
-    dots.eachDotsWithIndex((dot, x, y) {
-      if (dot.color == null) return;
-      if (dot.color.length == 0) return;
+    dots.eachColorWithIndex((color, x, y) {
+      if (color == null) return;
+      if (color.length == 0) return;
       canvasContext
-        ..fillStyle = dot.color
+        ..fillStyle = color
         ..fillRect(x * dotSize, y * dotSize, dotSize, dotSize);
     });
   }
