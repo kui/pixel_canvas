@@ -1,9 +1,9 @@
-name: dots_canvas_sample
+name: pixel_canvas_sample
 description: A sample Polymer application
 dependencies:
   polymer: any
-  dots_canvas:
+  pixel_canvas:
     path: '..'
 transformers:
 - polymer:
-    entry_points: web/dots_canvas_sample.html
+    entry_points: web/pixel_canvas_sample.html

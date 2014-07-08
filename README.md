@@ -1,16 +1,16 @@
-Dots Canvas
-============
+Pixel Canvas
+==============
 
-a custom element with Polymer.dart.
+A custom element with Polymer.dart.
 
-Sample
--------
+Example
+---------
 
 In your html:
 
 ```html
 <body bgcolor="#ccc">
-  <dots-canvas verticalDots="10" horizontalDots="10" dotSize="50">
+  <pixel-canvas verticalPixels="10" horizontalPixels="10" pixelSize="50">
     [
       ["green"],
       ["red", null, "blue"],
@@ -25,7 +25,7 @@ In your html:
        "rgba(0, 255, 255, 0.8)",
        "rgba(0, 255, 255, 1.0)"]
     ]
-  </dots-canvas>
+  </pixel-canvas>
 </body>
 ```
 

@@ -1,0 +1,8 @@
+<polymer-element name="pixel-canvas" attributes="verticalPixels horizontalPixels pixelSize noGridlines gridlineColor gridlineWidth logging">
+  <template>
+    <div id="wrapper">
+      <canvas width="{{horizontalPixels * pixelSize}}" height="{{verticalPixels * pixelSize}}"></canvas>
+    </div>
+  </template>
+  <script type="application/dart" src="pixel_canvas.dart"></script>
+</polymer-element>

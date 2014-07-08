@@ -2,28 +2,28 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Sample Usage Dots Canvas</title>
+    <title>Sample Usage Pixel Canvas</title>
     <script src="packages/web_components/platform.js"></script>
     <script src="packages/web_components/dart_support.js"></script>
 
     <link rel="import" href="packages/polymer/polymer.html">
-    <link rel="import" href="packages/dots_canvas/dots_canvas.html">
+    <link rel="import" href="packages/pixel_canvas/pixel_canvas.html">
 
     <script type="application/dart">
       import 'package:polymer/polymer.dart';
-      import 'package:dots_canvas/dots_canvas.dart';
-      import 'dart:async';
+      import 'package:pixel_canvas/pixel_canvas.dart';
       import 'dart:html';
 
       main() {
         initPolymer();
 
-        DotsCanvasElement canvas = querySelector('dots-canvas');
-        canvas.addDotEventListener('click', (event, p, color) {
-          if(color == null) {
-            canvas.setColorByPoint(p, 'red');
+        var inputColor = 'red';
+        PixelCanvasElement canvas = querySelector('pixel-canvas');
+        canvas.addPixelEventListener('click', (event, px) {
+          if(px.color == inputColor) {
+            canvas.setColor(px.x, px.y, null);
           } else {
-            canvas.setColorByPoint(p, null);
+            canvas.setColor(px.x, px.y, inputColor);
           }
         });
       }
@@ -37,7 +37,7 @@
     <!-- -----------------------------------------
       Sample
     ------------------------------------------ -->
-    <dots-canvas verticalDots="10" horizontalDots="10" dotSize="50" logging>
+    <pixel-canvas verticalPixels="10" horizontalPixels="10" PixelSize="50" logging>
       [
         ["green"],
         ["red", null, "blue"],
@@ -52,6 +52,6 @@
          "rgba(0, 255, 255, 0.8)",
          "rgba(0, 255, 255, 1.0)"]
       ]
-    </dots-canvas>
+    </pixel-canvas>
   </body>
 </html>

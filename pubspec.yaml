@@ -1,4 +1,4 @@
-name: dots_canvas
+name: pixel_canvas
 description: A custom element
 dependencies:
   polymer: '>=0.11.0 <0.12.0'
