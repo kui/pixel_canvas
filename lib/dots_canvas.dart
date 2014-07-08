@@ -3,12 +3,16 @@ library dots_canvas;
 import 'package:polymer/polymer.dart';
 import 'dart:html';
 import 'dart:convert';
+import 'dart:async';
 import 'dots.dart';
 
 @CustomTag('dots-canvas')
 class DotsCanvasElement extends PolymerElement {
 
-  static final JSON_PARSER = new JsonDecoder();
+  static const JSON_PARSER = const JsonDecoder();
+  static const CANVAS_FPS = 30;
+  static final RENDERER_DELAY =
+      new Duration(milliseconds: (1000/CANVAS_FPS).floor());
 
   @published
   int verticalDots = 32;
@@ -28,19 +32,20 @@ class DotsCanvasElement extends PolymerElement {
   @published
   int gridlineWidth = 1;
 
-  CanvasElement canvas;
-  CanvasRenderingContext2D canvasContext;
-  Dots dots;
+  CanvasElement _canvas;
+  CanvasRenderingContext2D _canvasContext;
+  Dots _dots;
+  Timer _rendererTimer;
 
   DotsCanvasElement.created() : super.created() {
-    canvas = shadowRoot.getElementsByTagName('canvas').first;
-    canvasContext = canvas.getContext('2d');
+    _canvas = shadowRoot.getElementsByTagName('canvas').first;
+    _canvasContext = _canvas.getContext('2d');
 
     List<List<String>> matrix = JSON_PARSER.convert(this.text);
     if (matrix == null) {
-      dots = new Dots(verticalDots, horizontalDots);
+      _dots = new Dots(verticalDots, horizontalDots);
     } else {
-      dots =
+      _dots =
           new Dots.fromColorMatrix(matrix, verticalDots, horizontalDots);
     }
 
@@ -50,31 +55,45 @@ class DotsCanvasElement extends PolymerElement {
     onPropertyChange(this, #verticalDots, onCanvasChange);
     onPropertyChange(this, #horizontalDots, onCanvasChange);
 
+    _dots.listeners.add((x, y, oldColor, newColor) {
+      renderWithDelay();
+    });
+
     render();
   }
 
   // callbacks
 
   void onNoGridlinesChange() {
-    render();
+    renderWithDelay();
   }
 
   void onCanvasChange() {
-    if (verticalDots == dots.verticalDots &&
-        horizontalDots == dots.horizontalDots)
+    if (verticalDots == _dots.verticalDots &&
+        horizontalDots == _dots.horizontalDots)
       return;
-    dots = new Dots.fromDots(dots, horizontalDots, verticalDots);
-    render();
+    _dots = new Dots.fromDots(_dots, horizontalDots, verticalDots);
+    renderWithDelay();
   }
 
   void onDotSizeChange() {
-    render();
+    renderWithDelay();
   }
 
   //
 
+  void renderWithDelay() {
+    if (_rendererTimer != null) return;
+
+    _rendererTimer = new Timer(RENDERER_DELAY, () {
+      _rendererTimer = null;
+      render();
+    });
+  }
+
   void render() {
-    clear();
+    print('render');
+    clearCanvas();
 
     renderDots();
     if (!noGridlines) {
@@ -86,36 +105,44 @@ class DotsCanvasElement extends PolymerElement {
     // horizontal gridlines
     for (int i = 0; i < verticalDots + 1; i++) {
       var y = dotSize * i;
-      canvasContext
+      _canvasContext
           ..moveTo(0, y)
-          ..lineTo(canvas.width, y);
+          ..lineTo(_canvas.width, y);
     }
 
     // vertical gridlines
     for (int i = 0; i < horizontalDots + 1; i++) {
       var x = dotSize * i;
-      canvasContext
+      _canvasContext
           ..moveTo(x, 0)
-          ..lineTo(x, canvas.height);
+          ..lineTo(x, _canvas.height);
     }
 
-    canvasContext
+    _canvasContext
         ..lineWidth = gridlineWidth
         ..strokeStyle = gridlineColor
         ..stroke();
   }
 
   void renderDots() {
-    dots.eachColorWithIndex((color, x, y) {
+    _dots.eachColorWithIndex((color, x, y) {
       if (color == null) return;
       if (color.length == 0) return;
-      canvasContext
+      _canvasContext
         ..fillStyle = color
         ..fillRect(x * dotSize, y * dotSize, dotSize, dotSize);
     });
   }
 
-  void clear() {
-    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+  void clearCanvas() {
+    _canvasContext.clearRect(0, 0, _canvas.width, _canvas.height);
+  }
+
+  String getColor(int x, int y) {
+    return _dots.get(x, y);
+  }
+
+  void setColor(int x, int y, String color) {
+    _dots.set(x, y, color);
   }
 }

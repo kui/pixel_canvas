@@ -6,6 +6,9 @@ library dots_canvas;
 class Dots {
   final List<List<String>> _colors;
 
+  final List<ColorChangeListener> _listeners = [];
+  List<ColorChangeListener> get listeners => _listeners;
+
   Dots(int verticalDots, int horizontalDots) :
     this._colors = createMatrix(verticalDots, horizontalDots);
 
@@ -25,7 +28,8 @@ class Dots {
       int horizontalDots,
       String colorGenerator(int x, int y)) {
     var dots = new Dots(verticalDots, horizontalDots);
-    dots.eachColorWithIndex((c, x, y) => dots.set(x, y, colorGenerator(x, y)));
+    dots.eachColorWithIndex(
+        (c, x, y) => dots._set(x, y, colorGenerator(x, y)));
     return dots;
   }
 
@@ -52,7 +56,8 @@ class Dots {
     if (oldDots == null)
       throw new ArgumentError('Expected 1st arg to be non-null');
 
-    return new Dots.fromColorMatrix(oldDots._colors, verticalDots, horizontalDots);
+    return new Dots.fromColorMatrix(
+        oldDots._colors, verticalDots, horizontalDots);
   }
 
   //
@@ -70,11 +75,24 @@ class Dots {
     }
   }
 
+  void set(int x, int y, String color) {
+    String old = get(x, y);
+    _set(x, y, color);
+    notifyColorChange(x, y, old, color);
+  }
+
   String get(int x, int y) {
     return _colors[y][x];
   }
 
-  void set(int x, int y, String color) {
+  void _set(int x, int y, String color) {
     _colors[y][x] = color;
   }
+
+  void notifyColorChange(int x, int y, String oldColor, String newColor) {
+    _listeners.forEach((l) => l(x, y, oldColor, newColor));
+  }
 }
+
+typedef void ColorChangeListener(
+    int x, int y, String oldColor, String newColor);

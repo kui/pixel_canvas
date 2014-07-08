@@ -9,7 +9,25 @@
     <link rel="import" href="packages/polymer/polymer.html">
     <link rel="import" href="packages/dots_canvas/dots_canvas.html">
 
-    <script type="application/dart">export 'package:polymer/init.dart';</script>
+    <script type="application/dart">
+      import 'package:polymer/polymer.dart';
+      import 'package:dots_canvas/dots_canvas.dart';
+      import 'dart:async';
+      import 'dart:html';
+
+      main() {
+        initPolymer();
+
+        var interval = new Duration(seconds: 1);
+        DotsCanvasElement canvas =
+            document.getElementsByTagName('dots-canvas').first;
+        int x = 0;
+        new Timer.periodic(interval, (timer){
+          canvas.setColor(x, 0, 'red');
+          x++;
+        });
+      }
+    </script>
     <script src="packages/browser/dart.js"></script>
   </head>
   <body bgcolor="#ccc">
@@ -33,6 +51,5 @@
          "rgba(0, 255, 255, 1.0)"]
       ]
     </dots-canvas>
-
   </body>
 </html>
