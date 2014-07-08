@@ -1,4 +1,6 @@
-library dots_canvas;
+library dots_canvas.dots;
+
+import 'dart:math';
 
 /**
  * Model
@@ -75,15 +77,17 @@ class Dots {
     }
   }
 
+  void setByPoint(Point<int> p, String color) => set(p.x, p.y, color);
+
   void set(int x, int y, String color) {
     String old = get(x, y);
     _set(x, y, color);
     notifyColorChange(x, y, old, color);
   }
 
-  String get(int x, int y) {
-    return _colors[y][x];
-  }
+  String getByPoint(Point<int> p) => get(p.x, p.y);
+
+  String get(int x, int y) => _colors[y][x];
 
   void _set(int x, int y, String color) {
     _colors[y][x] = color;

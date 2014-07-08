@@ -1,4 +1,4 @@
-library dots_canvas;
+library dots_canvas.element;
 
 import 'package:polymer/polymer.dart';
 import 'dart:html';
@@ -27,19 +27,23 @@ class DotsCanvasElement extends PolymerElement {
   bool noGridlines = false;
 
   @published
-  String gridlineColor = '#999';
+  String gridlineColor = 'rgba(0, 0, 0, 0.3)';
 
   @published
   int gridlineWidth = 1;
+
+  @published
+  bool logging = false;
 
   CanvasElement _canvas;
   CanvasRenderingContext2D _canvasContext;
   Dots _dots;
   Timer _rendererTimer;
+  final listenerMap = <DotEventListener, EventListener>{};
 
   DotsCanvasElement.created() : super.created() {
     _canvas = shadowRoot.getElementsByTagName('canvas').first;
-    _canvasContext = _canvas.getContext('2d');
+    initCanvasContext();
 
     List<List<String>> matrix = JSON_PARSER.convert(this.text);
     if (matrix == null) {
@@ -56,6 +60,8 @@ class DotsCanvasElement extends PolymerElement {
     onPropertyChange(this, #horizontalDots, onCanvasChange);
 
     _dots.listeners.add((x, y, oldColor, newColor) {
+      log('change color(x:$x, y:$y, oldColor:${oldColor}, '
+          'newColor:${newColor})');
       renderWithDelay();
     });
 
@@ -73,6 +79,7 @@ class DotsCanvasElement extends PolymerElement {
         horizontalDots == _dots.horizontalDots)
       return;
     _dots = new Dots.fromDots(_dots, horizontalDots, verticalDots);
+    initCanvasContext();
     renderWithDelay();
   }
 
@@ -82,26 +89,13 @@ class DotsCanvasElement extends PolymerElement {
 
   //
 
-  void renderWithDelay() {
-    if (_rendererTimer != null) return;
-
-    _rendererTimer = new Timer(RENDERER_DELAY, () {
-      _rendererTimer = null;
-      render();
-    });
-  }
-
-  void render() {
-    print('render');
-    clearCanvas();
-
-    renderDots();
-    if (!noGridlines) {
-      renderGridlines();
+  void initCanvasContext() {
+    if (_canvasContext != null) {
+      clearCanvas();
     }
-  }
 
-  void renderGridlines() {
+    _canvasContext = _canvas.getContext('2d');
+
     // horizontal gridlines
     for (int i = 0; i < verticalDots + 1; i++) {
       var y = dotSize * i;
@@ -120,8 +114,30 @@ class DotsCanvasElement extends PolymerElement {
 
     _canvasContext
         ..lineWidth = gridlineWidth
-        ..strokeStyle = gridlineColor
-        ..stroke();
+        ..strokeStyle = gridlineColor;
+  }
+
+  void renderWithDelay() {
+    if (_rendererTimer != null) return;
+
+    _rendererTimer = new Timer(RENDERER_DELAY, () {
+      _rendererTimer = null;
+      render();
+    });
+  }
+
+  void render() {
+    log('render');
+    clearCanvas();
+
+    renderDots();
+    if (!noGridlines) {
+      renderGridlines();
+    }
+  }
+
+  void renderGridlines() {
+    _canvasContext.stroke();
   }
 
   void renderDots() {
@@ -138,11 +154,44 @@ class DotsCanvasElement extends PolymerElement {
     _canvasContext.clearRect(0, 0, _canvas.width, _canvas.height);
   }
 
-  String getColor(int x, int y) {
-    return _dots.get(x, y);
+  String getColor(int x, int y) => _dots.get(x, y);
+  String getColorByPoint(Point<int> p) => _dots.getByPoint(p);
+  void setColor(int x, int y, String color) => _dots.set(x, y, color);
+  void setColorByPoint(Point<int> p, String color) =>
+      _dots.setByPoint(p, color);
+
+  void addDotEventListener(String eventType,
+                           DotEventListener listener,
+                           [bool useCapture]) =>
+    _canvas.addEventListener(
+        eventType, createEventListener(listener), useCapture);
+
+  void removeDotEventListener(String eventType,
+                              DotEventListener listener,
+                              [bool useCapture]) =>
+    _canvas.removeEventListener(
+        eventType, listenerMap[listener], useCapture);
+
+  EventListener createEventListener(DotEventListener listener) {
+    var l = (Event event) {
+      if (!(event is MouseEvent)) return;
+      var p = detectPoint(event);
+      listener(event, p, getColorByPoint(p));
+    };
+    listenerMap[listener] = l;
+    return l;
   }
 
-  void setColor(int x, int y, String color) {
-    _dots.set(x, y, color);
+  Point<int> detectPoint(MouseEvent event) {
+    var rect = _canvas.getBoundingClientRect();
+    double x = event.client.x - rect.left;
+    double y = event.client.y - rect.top;
+    return new Point((x/dotSize).floor(), (y/dotSize).floor());
+  }
+
+  void log(Object o) {
+    if (logging) print('${new DateTime.now()}: ${o}');
   }
 }
+
+typedef DotEventListener(Event event, Point<int> point, String color);

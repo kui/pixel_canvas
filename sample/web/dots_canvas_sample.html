@@ -18,13 +18,13 @@
       main() {
         initPolymer();
 
-        var interval = new Duration(seconds: 1);
-        DotsCanvasElement canvas =
-            document.getElementsByTagName('dots-canvas').first;
-        int x = 0;
-        new Timer.periodic(interval, (timer){
-          canvas.setColor(x, 0, 'red');
-          x++;
+        DotsCanvasElement canvas = querySelector('dots-canvas');
+        canvas.addDotEventListener('click', (event, p, color) {
+          if(color == null) {
+            canvas.setColorByPoint(p, 'red');
+          } else {
+            canvas.setColorByPoint(p, null);
+          }
         });
       }
     </script>
@@ -32,10 +32,12 @@
   </head>
   <body bgcolor="#ccc">
 
+    <p>Click pixels</p>
+
     <!-- -----------------------------------------
       Sample
     ------------------------------------------ -->
-    <dots-canvas verticalDots="10" horizontalDots="10" dotSize="50">
+    <dots-canvas verticalDots="10" horizontalDots="10" dotSize="50" logging>
       [
         ["green"],
         ["red", null, "blue"],
