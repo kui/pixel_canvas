@@ -3,8 +3,8 @@ Pixel Canvas
 
 A custom element with Polymer.dart.
 
-Example
----------
+Example Usage
+--------------
 
 In your html:
 
@@ -32,3 +32,17 @@ In your html:
 then it will be renderd like:
 
 ![the sample of screenshot](img/screenshot1.png)
+
+
+You can see [other samples](https://github.com/kui/dots_canvas/tree/master/sample/web)
+
+Run Sample
+-------------
+
+In your terminal:
+
+```bash
+pub serve
+```
+
+then browse http://localhost:8080/
