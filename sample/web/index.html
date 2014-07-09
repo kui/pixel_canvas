@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<ul></ul>
+
+<script type="application/dart">
+  import 'dart:html';
+  main() {
+    var fileNameList = [
+      'simple_rendering.html',
+      'drawing_with_click.html',
+      'drawing_with_drag.html'
+    ];
+    Element ul = document.querySelector('ul');
+    fileNameList.forEach((name) {
+      ul.appendHtml('<li><a href="$name">$name</a></li>');
+    });
+  }
+</script>

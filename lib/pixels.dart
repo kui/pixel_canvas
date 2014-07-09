@@ -109,6 +109,7 @@ class Pixels {
   }
 
   void notifyColorChange(int x, int y, String oldColor, String newColor) {
+    if (oldColor == newColor) return;
     _colorChangeController.add(new ColorChangeEvent(x, y, oldColor, newColor));
   }
 }

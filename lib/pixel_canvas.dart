@@ -37,15 +37,21 @@ class PixelCanvasElement extends PolymerElement {
   CanvasRenderingContext2D _canvasContext;
   Pixels _pixels;
   Timer _rendererTimer;
-  final listenerMap = <PixelEventListener, EventListener>{};
+
+  Stream<CustomEvent> get onPixelMouseMove => on['pixelmousemove'];
+  Stream<CustomEvent> get onPixelMouseOut => on['pixelmouseout'];
+  Stream<CustomEvent> get onPixelMouseOver => on['pixelmouseover'];
+  Stream<CustomEvent> get onPixelMouseDown => on['pixelmousedown'];
+  Stream<CustomEvent> get onPixelMouseUp => on['pixelmouseup'];
+  Stream<CustomEvent> get onPixelClick => on['pixelclick'];
 
   PixelCanvasElement.created() : super.created() {
     _canvas = shadowRoot.getElementsByTagName('canvas').first;
-    initCanvas();
-    initCanvasContext();
+    _initCanvas();
+    _initCanvasContext();
 
     _pixels = new Pixels.fromJson(this.text, verticalPixels, horizontalPixels);
-    initPixels();
+    _initPixels();
 
     onPropertyChange(this, #noGridlines, handleNoGridlinesChange);
     onPropertyChange(this, #pixelSize, handlePixelSizeChange);
@@ -67,8 +73,8 @@ class PixelCanvasElement extends PolymerElement {
         horizontalPixels == _pixels.horizontalPixels)
       return;
     _pixels = new Pixels.fromPixels(_pixels, horizontalPixels, verticalPixels);
-    initPixels();
-    initCanvasContext();
+    _initPixels();
+    _initCanvasContext();
     renderWithDelay();
   }
 
@@ -78,24 +84,81 @@ class PixelCanvasElement extends PolymerElement {
 
   //
 
-  void initCanvas() {
-    on['pixelmouseover'];
-    on['pixelmouseout'];
-    on['pixelclick'];
-    on['pixelmousedown'];
-    on['pixelmouseup'];
+  void _initCanvas() {
+    _initCustomEventListener();
   }
 
-  void initCanvasContext() {
+  void _initCustomEventListener() {
+    // binded value: the pixel which be mouse-overed currently
+    Pixel currentPx = null;
+
+    _canvas.onMouseMove.listen((MouseEvent event) {
+      var px = detectPixel(event);
+      if (px == null) {
+        currentPx == null;
+        return;
+      }
+      dispatchPixelEvent('pixelmousemove', event, px);
+
+      if (px.equalsOnPoint(currentPx)) {
+        return;
+      }
+
+      if (currentPx != null) {
+        dispatchPixelEvent('pixelmouseout', event, currentPx);
+      }
+      dispatchPixelEvent('pixelmouseover', event, px);
+
+      currentPx = px;
+    });
+
+    _canvas.onMouseOut.listen((MouseEvent event) {
+      dispatchPixelEvent('pixelmouseout', event, currentPx);
+      currentPx = null;
+    });
+
+    _canvas.onMouseOver.listen((MouseEvent event) {
+      var px = detectPixel(event);
+      if (px != null) {
+        dispatchPixelEvent('pixelmouseover', event, px);
+      }
+      currentPx = px;
+    });
+
+    _canvas.onClick.listen((MouseEvent event) {
+      dispatchPixelEvent('pixelclick', event, currentPx);
+    });
+
+    _canvas.onMouseDown.listen((MouseEvent event) {
+      dispatchPixelEvent('pixelmousedown', event, currentPx);
+    });
+
+    _canvas.onMouseUp.listen((MouseEvent event) {
+      dispatchPixelEvent('pixelmouseup', event, currentPx);
+    });
+  }
+
+  dispatchPixelEvent(String t, MouseEvent e, Pixel p) =>
+      dispatchEvent(_createPixelEvent(t, e, p));
+
+  CustomEvent _createPixelEvent(String type,
+                               MouseEvent origin,
+                               Pixel px) =>
+    new CustomEvent(
+        type, canBubble: false, cancelable: false,
+        detail: {'origin': origin, 'pixel': px});
+
+
+  void _initCanvasContext() {
     if (_canvasContext != null) {
       clearCanvas();
     }
 
     _canvasContext = _canvas.getContext('2d');
-    lineAsGrids();
+    _lineAsGrids();
   }
 
-  void lineAsGrids() {
+  void _lineAsGrids() {
     // horizontal gridlines
     for (int i = 0; i < verticalPixels + 1; i++) {
       var y = pixelSize * i;
@@ -117,7 +180,7 @@ class PixelCanvasElement extends PolymerElement {
         ..strokeStyle = gridlineColor;
   }
 
-  void initPixels() {
+  void _initPixels() {
     _pixels.colorChange.listen((e) {
       log('change color(x:${e.x}, y:${e.y}, oldColor:${e.oldColor}, '
           'newColor:${e.newColor})');
@@ -168,35 +231,34 @@ class PixelCanvasElement extends PolymerElement {
   void setColorByPoint(Point<int> p, String color) =>
       _pixels.setByPoint(p, color);
 
-  void addPixelEventListener(String eventType,
-                             PixelEventListener listener,
-                             [bool useCapture]) =>
-    _canvas.addEventListener(
-        eventType, _createEventListener(listener), useCapture);
-
-  void removePixelEventListener(String eventType,
-                                PixelEventListener listener,
-                                [bool useCapture]) =>
-    _canvas.removeEventListener(
-        eventType, listenerMap[listener], useCapture);
-
-  EventListener _createEventListener(PixelEventListener listener) {
-    var l = (Event event) {
-      if (!(event is MouseEvent)) return;
-      var p = detectPixel(event);
-      listener(event, p);
-    };
-    listenerMap[listener] = l;
-    return l;
-  }
-
   Pixel detectPixel(MouseEvent event) {
     var rect = _canvas.getBoundingClientRect();
-    double eventX = event.client.x - rect.left;
-    double eventY = event.client.y - rect.top;
+    var client = event.client;
+
+    if (!rect.containsPoint(client)) {
+      return null;
+    }
+
+    double eventX = client.x - rect.left;
+    double eventY = client.y - rect.top;
     int x = (eventX/pixelSize).floor();
     int y = (eventY/pixelSize).floor();
-    return new Pixel(x, y, getColor(x, y));
+
+    if (x >= horizontalPixels || y >= verticalPixels) {
+      return null;
+    }
+
+    return new Pixel(x, y, getColor(x, y), _pixels);
+  }
+
+  String toDataUrl([String type = 'image/png', num quality]) =>
+    _canvas.toDataUrl(type, quality);
+
+  void downloadAs(String name, [String type = 'image/png', num quality]) {
+    AnchorElement anchor = new AnchorElement()
+      ..href = toDataUrl(type, quality)
+      ..download = name
+      ..dispatchEvent(new MouseEvent('click'));
   }
 
   void log(Object o) {
@@ -204,13 +266,21 @@ class PixelCanvasElement extends PolymerElement {
   }
 }
 
-typedef PixelEventListener(Event event, Pixel pixel);
-
 class Pixel {
   final int x, y;
-  final String color;
+  String _color;
+  final Pixels _pixels;
 
-  Pixel(this.x, this.y, this.color);
+  Pixel(this.x, this.y, this._color, this._pixels) {
+  }
 
+  String get color => _color;
+  void set color(String newColor) {
+    _color = newColor;
+    _pixels.set(x, y, newColor);
+  }
+
+  bool equalsOnPoint(Pixel o) => o != null && x == o.x && y == o.y;
   Point<int> toPoint() => new Point<int>(x, y);
+  String toString() => 'Pixel($x,$y,$color)';
 }

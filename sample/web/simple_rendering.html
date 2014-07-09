@@ -10,30 +10,11 @@
     <link rel="import" href="packages/pixel_canvas/pixel_canvas.html">
 
     <script type="application/dart">
-      import 'package:polymer/polymer.dart';
-      import 'package:pixel_canvas/pixel_canvas.dart';
-      import 'dart:html';
-
-      main() {
-        initPolymer();
-
-        var inputColor = 'red';
-        PixelCanvasElement canvas = querySelector('pixel-canvas');
-        canvas.addPixelEventListener('click', (event, px) {
-          if(px.color == inputColor) {
-            canvas.setColor(px.x, px.y, null);
-          } else {
-            canvas.setColor(px.x, px.y, inputColor);
-          }
-        });
-      }
+      export 'package:polymer/init.dart';
     </script>
     <script src="packages/browser/dart.js"></script>
   </head>
   <body bgcolor="#ccc">
-
-    <p>Click pixels</p>
-
     <!-- -----------------------------------------
       Sample
     ------------------------------------------ -->
