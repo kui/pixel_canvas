@@ -1,4 +1,7 @@
 name: pixel_canvas
+version: 0.0.1
 description: A custom element
+author: Keiichiro Ui <keiichiro.ui@gmail.com>
+homepage: https://github.com/kui/pixel_canvas
 dependencies:
   polymer: '>=0.11.0 <0.12.0'
