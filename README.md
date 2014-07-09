@@ -34,7 +34,7 @@ then it will be renderd like:
 ![the sample of screenshot](https://raw.githubusercontent.com/kui/pixel_canvas/master/img/screenshot1.png)
 
 
-You can see [other samples](https://github.com/kui/dots_canvas/tree/master/sample/web)
+You can see [other samples](https://github.com/kui/dots_canvas/tree/master/example/web)
 
 Run Sample
 -------------
@@ -45,4 +45,4 @@ In your terminal:
 pub serve
 ```
 
-then browse http://localhost:8080/
+then browse <http://localhost:8080/>
