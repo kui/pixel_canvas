@@ -3,6 +3,8 @@ Pixel Canvas
 
 A custom element with Polymer.dart.
 
+* [Live demo](http://kui.github.io/pixel_canvas_example/)
+
 Example Usage
 --------------
 
