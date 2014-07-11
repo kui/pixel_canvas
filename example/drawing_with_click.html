@@ -6,15 +6,49 @@
     <script src="packages/web_components/platform.js"></script>
     <script src="packages/web_components/dart_support.js"></script>
 
-    <link rel="import" href="packages/polymer/polymer.html">
     <link rel="import" href="packages/pixel_canvas/pixel_canvas.html">
 
     <script type="application/dart">
-      export 'package:polymer/init.dart';
+      import 'package:polymer/polymer.dart';
+      import 'package:pixel_canvas/pixel_canvas.dart';
+      import 'dart:html';
+
+      main() {
+        initPolymer();
+
+        var inputColor = 'red';
+        var mouseLeftButton = 1;
+        bool isLeftButtonClick(MouseEvent e) =>
+            mouseLeftButton == e.which;
+
+        PixelCanvasElement canvas = querySelector('pixel-canvas');
+
+        canvas.onPixelClick.listen((e) {
+          MouseEvent me = e.detail['origin'];
+          if (!isLeftButtonClick(me)) return;
+
+          Pixel p = e.detail['pixel'];
+
+          // toggle color
+          if (p.color == inputColor) {
+            p.color = null;
+          } else {
+            p.color = inputColor;
+          }
+        });
+
+        // download button
+        ButtonElement downloadButton = querySelector('#download-as-png');
+        downloadButton.onClick.listen((e) {
+          canvas.downloadAs('pixel-canvas-sample.png');
+        });
+      }
     </script>
-    <script src="packages/browser/dart.js"></script>
   </head>
   <body bgcolor="#ccc">
+
+    <p>Click pixels</p>
+
     <!-- -----------------------------------------
       Sample
     ------------------------------------------ -->
@@ -34,5 +68,6 @@
          "rgba(0, 255, 255, 1.0)"]
       ]
     </pixel-canvas>
+    <button id="download-as-png">Download as PNG</button>
   </body>
 </html>

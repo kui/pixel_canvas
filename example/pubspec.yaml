@@ -1,9 +1,0 @@
-name: pixel_canvas_sample
-description: A sample Polymer application
-dependencies:
-  polymer: any
-  browser: any
-  pixel_canvas:
-    path: '..'
-transformers:
-- polymer

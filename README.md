@@ -3,7 +3,8 @@ Pixel Canvas
 
 A custom element with Polymer.dart.
 
-* [Live demo](http://kui.github.io/pixel_canvas_example/)
+* [Live demo](http://kui.github.io/pixel_canvas/)
+* [Examples](https://github.com/kui/dots_canvas/tree/master/example/)
 
 Example Usage
 --------------
@@ -33,18 +34,13 @@ In your html:
 
 then it will be renderd like:
 
-![the sample of screenshot](https://raw.githubusercontent.com/kui/pixel_canvas/master/img/screenshot1.png)
+![the sample of screenshot](https://raw.githubusercontent.com/kui/pixel_canvas/master/example/screenshot1.png)
 
 
-You can see [other samples](https://github.com/kui/dots_canvas/tree/master/example/web)
+Build and push gh-pages
+------------------------
 
-Run Sample
--------------
-
-In your terminal:
-
-```bash
-pub serve
+```sh
+$ tool/gh-pages.dart
+$ git push origin gh-pages
 ```
-
-then browse <http://localhost:8080/>

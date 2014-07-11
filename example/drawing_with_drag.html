@@ -6,7 +6,6 @@
     <script src="packages/web_components/platform.js"></script>
     <script src="packages/web_components/dart_support.js"></script>
 
-    <link rel="import" href="packages/polymer/polymer.html">
     <link rel="import" href="packages/pixel_canvas/pixel_canvas.html">
 
     <script type="application/dart">
@@ -21,21 +20,46 @@
         var mouseLeftButton = 1;
         bool isLeftButtonClick(MouseEvent e) =>
             mouseLeftButton == e.which;
-
         PixelCanvasElement canvas = querySelector('pixel-canvas');
 
-        canvas.onPixelClick.listen((e) {
+        // handle isMouseDown
+
+        bool isMouseDown = false;
+        String drawnColor = null;
+        handleMouseButton(CustomEvent e) {
           MouseEvent me = e.detail['origin'];
-          if (!isLeftButtonClick(me)) return;
+
+          var newIsMouseDown = isLeftButtonClick(me);
+          if (newIsMouseDown == isMouseDown) return;
+
+          isMouseDown = newIsMouseDown;
+          if (!newIsMouseDown) return;
 
           Pixel p = e.detail['pixel'];
-
-          // toggle color
           if (p.color == inputColor) {
-            p.color = null;
+            drawnColor = null;
           } else {
-            p.color = inputColor;
+            drawnColor = inputColor;
           }
+        }
+        canvas.onPixelMouseMove.listen(handleMouseButton);
+        canvas.onPixelMouseDown.listen(handleMouseButton);
+        canvas.onPixelMouseUp.listen((e){
+          MouseEvent me = e.detail['origin'];
+          if (!isLeftButtonClick(me)) return;
+          isMouseDown = false;
+        });
+
+        // drawing
+
+        draw(CustomEvent e) {
+          Pixel p = e.detail['pixel'];
+          p.color = drawnColor;
+        }
+        canvas.onPixelMouseDown.listen(draw);
+        canvas.onPixelMouseOver.listen((e) {
+          if (!isMouseDown) return;
+          draw(e);
         });
 
         // download button
@@ -45,11 +69,10 @@
         });
       }
     </script>
-    <script src="packages/browser/dart.js"></script>
   </head>
   <body bgcolor="#ccc">
 
-    <p>Click pixels</p>
+    <p>Click or drag pixels</p>
 
     <!-- -----------------------------------------
       Sample
