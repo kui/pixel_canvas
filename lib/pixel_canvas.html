@@ -1,6 +1,14 @@
 <link rel="import" href="../../packages/polymer/polymer.html">
 <polymer-element name="pixel-canvas" attributes="verticalPixels horizontalPixels pixelSize noGridlines gridlineColor gridlineWidth">
   <template>
+    <style>
+      :host {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+    </style>
     <canvas width="{{horizontalPixels * pixelSize}}" height="{{verticalPixels * pixelSize}}"></canvas>
   </template>
   <script type="application/dart" src="pixel_canvas.dart"></script>
