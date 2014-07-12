@@ -26,8 +26,8 @@
 
         bool isMouseDown = false;
         String drawnColor = null;
-        handleMouseButton(CustomEvent e) {
-          MouseEvent me = e.detail['origin'];
+        handleMouseButton(PixelMouseEvent e) {
+          MouseEvent me = e.origin;
 
           var newIsMouseDown = isLeftButtonClick(me);
           if (newIsMouseDown == isMouseDown) return;
@@ -35,7 +35,7 @@
           isMouseDown = newIsMouseDown;
           if (!newIsMouseDown) return;
 
-          Pixel p = e.detail['pixel'];
+          Pixel p = e.pixel;
           if (p.color == inputColor) {
             drawnColor = null;
           } else {
@@ -45,15 +45,15 @@
         canvas.onPixelMouseMove.listen(handleMouseButton);
         canvas.onPixelMouseDown.listen(handleMouseButton);
         canvas.onPixelMouseUp.listen((e){
-          MouseEvent me = e.detail['origin'];
+          MouseEvent me = e.origin;
           if (!isLeftButtonClick(me)) return;
           isMouseDown = false;
         });
 
         // drawing
 
-        draw(CustomEvent e) {
-          Pixel p = e.detail['pixel'];
+        draw(PixelMouseEvent e) {
+          Pixel p = e.pixel;
           p.color = drawnColor;
         }
         canvas.onPixelMouseDown.listen(draw);

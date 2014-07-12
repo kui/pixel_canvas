@@ -38,12 +38,42 @@ class PixelCanvasElement extends PolymerElement {
   Pixels _pixels;
   Timer _rendererTimer;
 
-  Stream<CustomEvent> get onPixelMouseMove => on['pixelmousemove'];
-  Stream<CustomEvent> get onPixelMouseOut => on['pixelmouseout'];
-  Stream<CustomEvent> get onPixelMouseOver => on['pixelmouseover'];
-  Stream<CustomEvent> get onPixelMouseDown => on['pixelmousedown'];
-  Stream<CustomEvent> get onPixelMouseUp => on['pixelmouseup'];
-  Stream<CustomEvent> get onPixelClick => on['pixelclick'];
+  StreamController<PixelMouseEvent> _mouseMoveEventsController =
+      new StreamController.broadcast();
+  StreamController<PixelMouseEvent> _mouseOutEventsController =
+      new StreamController.broadcast();
+  StreamController<PixelMouseEvent> _mouseOverEventsController =
+      new StreamController.broadcast();
+  StreamController<PixelMouseEvent> _mouseDownEventsController =
+      new StreamController.broadcast();
+  StreamController<PixelMouseEvent> _mouseUpEventsController =
+      new StreamController.broadcast();
+  StreamController<PixelMouseEvent> _clickEventsController =
+      new StreamController.broadcast();
+  StreamController<PixelCanvesEvent> _beforeRenderingEventController =
+      new StreamController.broadcast();
+  StreamController<PixelCanvesEvent> _afterRenderingEventController =
+      new StreamController.broadcast();
+
+  Stream<PixelMouseEvent> get onPixelMouseMove =>
+      _mouseMoveEventsController.stream;
+  Stream<PixelMouseEvent> get onPixelMouseOut =>
+      _mouseOutEventsController.stream;
+  Stream<PixelMouseEvent> get onPixelMouseOver =>
+      _mouseOverEventsController.stream;
+  Stream<PixelMouseEvent> get onPixelMouseDown =>
+      _mouseDownEventsController.stream;
+  Stream<PixelMouseEvent> get onPixelMouseUp =>
+      _mouseUpEventsController.stream;
+  Stream<PixelMouseEvent> get onPixelClick =>
+      _clickEventsController.stream;
+  Stream<ColorChangeEvent> get onPixelColorChange =>
+      _pixels.onColorChange;
+  Stream<PixelCanvesEvent> get onBeforeRendering =>
+      _beforeRenderingEventController.stream;
+  Stream<PixelCanvesEvent> get onAfterRendering =>
+      _afterRenderingEventController.stream;
+
 
   PixelCanvasElement.created() : super.created() {
     _canvas = shadowRoot.getElementsByTagName('canvas').first;
@@ -98,56 +128,59 @@ class PixelCanvasElement extends PolymerElement {
         currentPx == null;
         return;
       }
-      dispatchPixelEvent('pixelmousemove', event, px);
+      dispatchPixelMouseEvent(_mouseMoveEventsController, 'pixelmousemove',
+          event, px);
 
       if (px.equalsOnPoint(currentPx)) {
         return;
       }
 
       if (currentPx != null) {
-        dispatchPixelEvent('pixelmouseout', event, currentPx);
+        dispatchPixelMouseEvent(_mouseOutEventsController, 'pixelmouseout',
+            event, currentPx);
       }
-      dispatchPixelEvent('pixelmouseover', event, px);
+      dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
+          event, px);
 
       currentPx = px;
     });
 
     _canvas.onMouseOut.listen((MouseEvent event) {
-      dispatchPixelEvent('pixelmouseout', event, currentPx);
+      dispatchPixelMouseEvent(_mouseOutEventsController, 'pixelmouseout',
+          event, currentPx);
       currentPx = null;
     });
 
     _canvas.onMouseOver.listen((MouseEvent event) {
       var px = detectPixel(event);
       if (px != null) {
-        dispatchPixelEvent('pixelmouseover', event, px);
+        dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
+            event, px);
       }
       currentPx = px;
     });
 
     _canvas.onClick.listen((MouseEvent event) {
-      dispatchPixelEvent('pixelclick', event, currentPx);
+      dispatchPixelMouseEvent(_clickEventsController, 'pixelclick', event,
+          currentPx);
     });
 
     _canvas.onMouseDown.listen((MouseEvent event) {
-      dispatchPixelEvent('pixelmousedown', event, currentPx);
+      dispatchPixelMouseEvent(_mouseDownEventsController, 'pixelmousedown',
+          event, currentPx);
     });
 
     _canvas.onMouseUp.listen((MouseEvent event) {
-      dispatchPixelEvent('pixelmouseup', event, currentPx);
+      dispatchPixelMouseEvent(_mouseUpEventsController, 'pixelmouseup', event,
+          currentPx);
     });
   }
 
-  dispatchPixelEvent(String t, MouseEvent e, Pixel p) =>
-      dispatchEvent(_createPixelEvent(t, e, p));
-
-  CustomEvent _createPixelEvent(String type,
-                               MouseEvent origin,
-                               Pixel px) =>
-    new CustomEvent(
-        type, canBubble: false, cancelable: false,
-        detail: {'origin': origin, 'pixel': px});
-
+  dispatchPixelMouseEvent(StreamController c,
+                          String type,
+                          MouseEvent e,
+                          Pixel p) =>
+      c.add(new PixelMouseEvent(type, this, p, e));
 
   void _initCanvasContext() {
     if (_canvasContext != null) {
@@ -181,7 +214,7 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void _initPixels() {
-    _pixels.colorChange.listen((e) {
+    _pixels.onColorChange.listen((e) {
       log('change color(x:${e.x}, y:${e.y}, oldColor:${e.oldColor}, '
           'newColor:${e.newColor})');
       renderWithDelay();
@@ -199,6 +232,16 @@ class PixelCanvasElement extends PolymerElement {
 
   void render() {
     log('render');
+    _beforeRenderingEventController.add(
+        new PixelCanvesEvent('beforerendering', this));
+
+    _render();
+
+    _afterRenderingEventController.add(
+        new PixelCanvesEvent('afterrendering', this));
+  }
+
+  void _render() {
     clearCanvas();
 
     renderPixels();
@@ -258,7 +301,7 @@ class PixelCanvasElement extends PolymerElement {
     AnchorElement anchor = new AnchorElement()
       ..href = toDataUrl(type, quality)
       ..download = name
-      ..dispatchEvent(new MouseEvent('click'));
+      ..click();
   }
 
   void log(Object o) {
@@ -283,4 +326,20 @@ class Pixel {
   bool equalsOnPoint(Pixel o) => o != null && x == o.x && y == o.y;
   Point<int> toPoint() => new Point<int>(x, y);
   String toString() => 'Pixel($x,$y,$color)';
+}
+
+class PixelCanvesEvent {
+  final String type;
+  final PixelCanvasElement canvas;
+  PixelCanvesEvent(this.type, this.canvas);
+}
+class PixelEvent extends PixelCanvesEvent{
+  final Pixel pixel;
+  PixelEvent(String type, PixelCanvasElement canvas, this.pixel):
+    super(type, canvas);
+}
+class PixelMouseEvent extends PixelEvent {
+  final MouseEvent origin;
+  PixelMouseEvent(String type, PixelCanvasElement canvas, Pixel p, this.origin):
+    super(type, canvas, p);
 }
