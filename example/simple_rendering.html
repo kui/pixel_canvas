@@ -9,14 +9,25 @@
     <link rel="import" href="packages/pixel_canvas/pixel_canvas.html">
 
     <script type="application/dart">
-      export 'package:polymer/init.dart';
+      import 'package:polymer/polymer.dart';
+      import 'package:pixel_canvas/pixel_canvas.dart';
+      import 'dart:html';
+
+      main() {
+        initPolymer();
+
+        PixelCanvasElement canvas = querySelector('pixel-canvas');
+        canvas.onBeforeRendering.listen((e) => print('render'));
+        canvas.onPixelColorChange.listen((e) =>
+            print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
+      }
     </script>
   </head>
   <body bgcolor="#ccc">
     <!-- -----------------------------------------
       Sample
     ------------------------------------------ -->
-    <pixel-canvas verticalPixels="10" horizontalPixels="10" PixelSize="50" logging>
+    <pixel-canvas verticalPixels="10" horizontalPixels="10" PixelSize="50">
       [
         ["green"],
         ["red", null, "blue"],

@@ -30,9 +30,6 @@ class PixelCanvasElement extends PolymerElement {
   @published
   int gridlineWidth = 1;
 
-  @published
-  bool logging = false;
-
   CanvasElement _canvas;
   CanvasRenderingContext2D _canvasContext;
   Pixels _pixels;
@@ -49,6 +46,8 @@ class PixelCanvasElement extends PolymerElement {
   StreamController<PixelMouseEvent> _mouseUpEventsController =
       new StreamController.broadcast();
   StreamController<PixelMouseEvent> _clickEventsController =
+      new StreamController.broadcast();
+  StreamController<PixelColorChangeEvent> _colorChangeEventsController =
       new StreamController.broadcast();
   StreamController<PixelCanvesEvent> _beforeRenderingEventController =
       new StreamController.broadcast();
@@ -67,8 +66,8 @@ class PixelCanvasElement extends PolymerElement {
       _mouseUpEventsController.stream;
   Stream<PixelMouseEvent> get onPixelClick =>
       _clickEventsController.stream;
-  Stream<ColorChangeEvent> get onPixelColorChange =>
-      _pixels.onColorChange;
+  Stream<PixelColorChangeEvent> get onPixelColorChange =>
+      _colorChangeEventsController.stream;
   Stream<PixelCanvesEvent> get onBeforeRendering =>
       _beforeRenderingEventController.stream;
   Stream<PixelCanvesEvent> get onAfterRendering =>
@@ -215,8 +214,9 @@ class PixelCanvasElement extends PolymerElement {
 
   void _initPixels() {
     _pixels.onColorChange.listen((e) {
-      log('change color(x:${e.x}, y:${e.y}, oldColor:${e.oldColor}, '
-          'newColor:${e.newColor})');
+      var p = new Pixel(e.x, e.y, e.newColor, _pixels);
+      var change = new PixelColorChangeEvent('pixelcolorchange', this, p, e.oldColor);
+      _colorChangeEventsController.add(change);
       renderWithDelay();
     });
   }
@@ -231,7 +231,6 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void render() {
-    log('render');
     _beforeRenderingEventController.add(
         new PixelCanvesEvent('beforerendering', this));
 
@@ -303,10 +302,6 @@ class PixelCanvasElement extends PolymerElement {
       ..download = name
       ..click();
   }
-
-  void log(Object o) {
-    if (logging) print('${new DateTime.now()}: ${o}');
-  }
 }
 
 class Pixel {
@@ -335,11 +330,15 @@ class PixelCanvesEvent {
 }
 class PixelEvent extends PixelCanvesEvent{
   final Pixel pixel;
-  PixelEvent(String type, PixelCanvasElement canvas, this.pixel):
-    super(type, canvas);
+  PixelEvent(String type, PixelCanvasElement c, this.pixel): super(type, c);
 }
 class PixelMouseEvent extends PixelEvent {
   final MouseEvent origin;
-  PixelMouseEvent(String type, PixelCanvasElement canvas, Pixel p, this.origin):
-    super(type, canvas, p);
+  PixelMouseEvent(String type, PixelCanvasElement c, Pixel p, this.origin):
+    super(type, c, p);
+}
+class PixelColorChangeEvent extends PixelEvent {
+  final String oldColor;
+  PixelColorChangeEvent(String type, PixelCanvasElement c, Pixel p,
+      this.oldColor): super(type, c, p);
 }

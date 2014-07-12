@@ -37,7 +37,14 @@
           }
         });
 
+        // logging
+
+        canvas.onBeforeRendering.listen((e) => print('render'));
+        canvas.onPixelColorChange.listen((e) =>
+            print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
+
         // download button
+
         ButtonElement downloadButton = querySelector('#download-as-png');
         downloadButton.onClick.listen((e) {
           canvas.downloadAs('pixel-canvas-sample.png');
@@ -52,7 +59,7 @@
     <!-- -----------------------------------------
       Sample
     ------------------------------------------ -->
-    <pixel-canvas verticalPixels="10" horizontalPixels="10" PixelSize="50" logging>
+    <pixel-canvas verticalPixels="10" horizontalPixels="10" PixelSize="50">
       [
         ["green"],
         ["red", null, "blue"],
