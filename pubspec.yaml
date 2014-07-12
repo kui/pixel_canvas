@@ -1,5 +1,5 @@
 name: pixel_canvas
-version: 0.0.3-dev
+version: 0.1.0
 description: A custom element
 author: Keiichiro Ui <keiichiro.ui@gmail.com>
 homepage: https://github.com/kui/pixel_canvas
