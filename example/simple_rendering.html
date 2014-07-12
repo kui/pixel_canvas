@@ -17,13 +17,18 @@
         initPolymer();
 
         PixelCanvasElement canvas = querySelector('pixel-canvas');
-        canvas.onBeforeRendering.listen((e) => print('render'));
-        canvas.onPixelColorChange.listen((e) =>
-            print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
+
+        canvas
+            ..onBeforeRendering.listen((e) => print('render'))
+            ..onPixelColorChange.listen((e) =>
+                print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
       }
     </script>
   </head>
   <body bgcolor="#ccc">
+
+    <p><a href="https://github.com/kui/pixel_canvas/blob/master/example/simple_rendering.html">Source code</a>
+
     <!-- -----------------------------------------
       Sample
     ------------------------------------------ -->

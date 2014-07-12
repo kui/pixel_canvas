@@ -24,10 +24,10 @@
         PixelCanvasElement canvas = querySelector('pixel-canvas');
 
         canvas.onPixelClick.listen((e) {
-          MouseEvent me = e.detail['origin'];
+          MouseEvent me = e.origin;
           if (!isLeftButtonClick(me)) return;
 
-          Pixel p = e.detail['pixel'];
+          Pixel p = e.pixel;
 
           // toggle color
           if (p.color == inputColor) {
@@ -39,16 +39,16 @@
 
         // logging
 
-        canvas.onBeforeRendering.listen((e) => print('render'));
-        canvas.onPixelColorChange.listen((e) =>
-            print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
+        canvas
+          ..onBeforeRendering.listen((_) => print('render'))
+          ..onPixelColorChange.listen((e) =>
+              print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
 
         // download button
 
-        ButtonElement downloadButton = querySelector('#download-as-png');
-        downloadButton.onClick.listen((e) {
-          canvas.downloadAs('pixel-canvas-sample.png');
-        });
+        querySelector('#download-as-png')
+          ..onClick.listen((_) =>
+              canvas.downloadAs('pixel-canvas-sample.png'));
       }
     </script>
   </head>

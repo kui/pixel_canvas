@@ -42,13 +42,14 @@
             drawnColor = inputColor;
           }
         }
-        canvas.onPixelMouseMove.listen(handleMouseButton);
-        canvas.onPixelMouseDown.listen(handleMouseButton);
-        canvas.onPixelMouseUp.listen((e){
-          MouseEvent me = e.origin;
-          if (!isLeftButtonClick(me)) return;
-          isMouseDown = false;
-        });
+        canvas
+            ..onPixelMouseMove.listen(handleMouseButton)
+            ..onPixelMouseDown.listen(handleMouseButton)
+            ..onPixelMouseUp.listen((e){
+              MouseEvent me = e.origin;
+              if (!isLeftButtonClick(me)) return;
+              isMouseDown = false;
+            });
 
         // drawing
 
@@ -56,28 +57,31 @@
           Pixel p = e.pixel;
           p.color = drawnColor;
         }
-        canvas.onPixelMouseDown.listen(draw);
-        canvas.onPixelMouseOver.listen((e) {
-          if (!isMouseDown) return;
-          draw(e);
-        });
+        canvas
+            ..onPixelMouseDown.listen(draw)
+            ..onPixelMouseOver.listen((e) {
+              if (!isMouseDown) return;
+              draw(e);
+            });
 
         // logging
 
-        canvas.onBeforeRendering.listen((e) => print('render'));
-        canvas.onPixelColorChange.listen((e) =>
-            print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
+        canvas
+          ..onBeforeRendering.listen((e) => print('render'))
+          ..onPixelColorChange.listen((e) =>
+              print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
 
         // download button
 
-        ButtonElement downloadButton = querySelector('#download-as-png');
-        downloadButton.onClick.listen((e) {
-          canvas.downloadAs('pixel-canvas-sample.png');
-        });
+        querySelector('#download-as-png')
+          ..onClick.listen((e) =>
+              canvas.downloadAs('pixel-canvas-sample.png'));
       }
     </script>
   </head>
   <body bgcolor="#ccc">
+
+    <p><a href="https://github.com/kui/pixel_canvas/blob/master/example/drawing_with_drag.html">Source code</a>
 
     <p>Click or drag pixels</p>
 
