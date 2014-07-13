@@ -59,7 +59,7 @@ bool isPackagesSubDir(String p) =>
 Future<File> generateIndexex(File idx) {
   print('Create index page: ${idx.path}');
 
-  var title = path.relative(idx.path, from: EXAMPLE_DIR);
+  var title = '/' + path.dirname(path.relative(idx.path, from: EXAMPLE_DIR));
   var filesFuture = idx.parent.list()
       .map((e) => path.basename(e.path))
       .where((name) => name != 'index.html')
