@@ -13,49 +13,44 @@
       import 'package:pixel_canvas/pixel_canvas.dart';
       import 'dart:html';
 
+      const INPUT_COLOR = 'red';
+      const LEFT_BUTTON = 1;
+
       main() {
         initPolymer();
 
-        var inputColor = 'red';
-        var mouseLeftButton = 1;
-        bool isLeftButtonClick(MouseEvent e) =>
-            mouseLeftButton == e.which;
+        bool isLeftButton(MouseEvent e) =>
+            LEFT_BUTTON == e.which;
         PixelCanvasElement canvas = querySelector('pixel-canvas');
 
         // handle isMouseDown
 
         bool isMouseDown = false;
         String drawnColor = null;
-        handleMouseButton(PixelMouseEvent e) {
-          MouseEvent me = e.origin;
-
-          var newIsMouseDown = isLeftButtonClick(me);
-          if (newIsMouseDown == isMouseDown) return;
-
-          isMouseDown = newIsMouseDown;
-          if (!newIsMouseDown) return;
-
-          Pixel p = e.pixel;
-          if (p.color == inputColor) {
+        selectColor(PixelMouseEvent e) {
+          if (e.pixel.color == INPUT_COLOR) {
             drawnColor = null;
           } else {
-            drawnColor = inputColor;
+            drawnColor = INPUT_COLOR;
           }
         }
-        canvas
-            ..onPixelMouseMove.listen(handleMouseButton)
-            ..onPixelMouseDown.listen(handleMouseButton)
-            ..onPixelMouseUp.listen((e){
-              MouseEvent me = e.origin;
-              if (!isLeftButtonClick(me)) return;
+
+        document
+            ..onMouseUp.listen((e){
+              if (!isLeftButton(e)) return;
               isMouseDown = false;
+            });
+        canvas
+            ..onPixelMouseDown.listen((PixelMouseEvent e) {
+              if (!isLeftButton(e.origin)) return;
+              isMouseDown = true;
+              selectColor(e);
             });
 
         // drawing
 
         draw(PixelMouseEvent e) {
-          Pixel p = e.pixel;
-          p.color = drawnColor;
+          e.pixel.color = drawnColor;
         }
         canvas
             ..onPixelMouseDown.listen(draw)
