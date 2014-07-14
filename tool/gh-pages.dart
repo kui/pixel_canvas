@@ -13,99 +13,143 @@ String PROJECT_DIR =
 String EXAMPLE_DIR = path.join(PROJECT_DIR, 'example');
 
 main() {
-  generateIndexes()
-    .then((files) => generateGhPages().then((_) => files))
-    .then((files) => deleteIndexes(files));
-}
-
-/**
- * return generated index pages
- */
-Future<List<File>> generateIndexes() {
-  Stream<File> targetIndexes =
-    exampleSubDirs
-      .map((d) => path.join(d.path, 'index.html'))
-      .map((String i) => new File(i))
-
-      // remove already existing indexes
-      .asyncExpand((File i) => i.exists()
-        .then((existing) => (existing) ? null : i)
-        .asStream()
-        .where((i) => i != null));
-
-  return targetIndexes
-      .asyncExpand((f) => generateIndexex(f).asStream())
-      .toList();
-}
-
-Stream<Directory> get exampleSubDirs {
-  StreamController<Directory> dirsController =
-    new StreamController.broadcast();
-
-  var subs = new Directory(EXAMPLE_DIR).list(recursive: true)
-    .where((e) => e is Directory)
-    .where((Directory d) => !isPackagesSubDir(d.path));
-
-  new Future(() => new Directory(EXAMPLE_DIR))
-    .then((d) => dirsController.add(d))
-    .then((_) => subs.pipe(dirsController));
-
-  return dirsController.stream;
-}
-
-bool isPackagesSubDir(String p) =>
-    path.split(path.relative(p, from: PROJECT_DIR)).contains('packages');
-
-Future<File> generateIndexex(File idx) {
-  print('Create index page: ${idx.path}');
-
-  var title = '/' + path.dirname(path.relative(idx.path, from: EXAMPLE_DIR));
-  var filesFuture = idx.parent.list()
-      .map((e) => path.basename(e.path))
-      .where((name) => name != 'index.html')
-      .where((String name) => name.endsWith('.html'))
-      .toList();
-  var outputFuture = idx.open(mode: FileMode.WRITE);
-
-  return Future.wait([filesFuture, outputFuture])
-      .then((List args) {
-        List<String> files = args[0];
-        RandomAccessFile output = args[1];
-        String content = buildIndexHtml(title, files);
-        return output.writeString(content);
-      })
-      .then((_) => idx);
-}
-
-buildIndexHtml(String title, List files) {
-  var content = new StringBuffer()
-    ..write("""
-<meta charset="utf-8">
-<title>$title</title>
-<h1>$title</h1>
-""");
-  if (files.isEmpty) {
-    content.writeln('<p>No content</p>');
-  } else {
-    content.writeln('<ul>');
-    files.forEach((f) => content.write('<li><a href="$f">$f</a></li>\n'));
-    content.writeln('</ul>');
-  }
-  return content.toString();
-}
-
-Future<List<File>> deleteIndexes(Iterable<File> indexes) {
-  return Future.wait(indexes.map((f) {
-    print('Delete index page: ${f.path}');
-    return f.delete();
-  }));
-}
-
-Future generateGhPages() {
-  var gen = new gh.Generator(rootDir: PROJECT_DIR)
+  var ghGen = new gh.Generator(rootDir: PROJECT_DIR)
     ..withExamples = true;
-  return gen.generate(doCustomTask: (workDir) {
+
+  ghGen.generate(doCustomTask: (workDir) {
     gh.moveExampleAtRoot(workDir);
+    return new IndexGenerator.fromPath(workDir).generate();
   });
 }
 
+class IndexGenerator {
+  List<File> indexes;
+  final Directory baseDir;
+
+  String fileName = 'index.html';
+  bool overwrite = false;
+  bool recursive = true;
+  List<String> excludes = ['packages', '.git'];
+
+  IndexGenerator(this.baseDir);
+  IndexGenerator.fromPath(String path): this(new Directory(path));
+
+  /**
+   * Generate index files which named [fileName]
+   * Return a future of generated files
+   */
+  Future<List<File>> generate() {
+    var dirs = recursive ? _dirs : new Stream.fromIterable([baseDir]);
+    return _generate(dirs);
+  }
+
+  /**
+   * Delete index files.
+   * Return a future of deleted (generated) files.
+   */
+  Future<List<File>> delete() {
+    var deleteds = indexes.map((f) {
+      print('Delete index page: ${f.path}');
+      return f.delete();
+    });
+    return Future.wait(deleteds);
+  }
+
+  Future<List<File>> _generate(Stream<Directory> dirs) {
+    Stream<File> targetIndexes = dirs
+        .map((d) => path.join(d.path, fileName))
+        .map((String i) => new File(i));
+
+    if (!overwrite) {
+      targetIndexes =
+        targetIndexes.asyncExpand((File i) => _removeIfExests(i));
+    }
+
+    return targetIndexes
+        .asyncExpand((f) => _generateIndex(f).asStream())
+        .toList()
+        .then((i) {indexes = i; return indexes;});
+  }
+
+  Future<File> _generateIndex(File idx) {
+    print('Create index page: ${idx.path}');
+
+    var p = (idx.parent.path == baseDir.path) ?
+        '/' : path.relative(idx.parent.path, from: baseDir.path);
+    var title = 'Index of $p';
+
+    var filesFuture = idx.parent.list()
+        .map((e) => path.basename(e.path))
+        .where((name) => name != path.basename(idx.path))
+        .where((String name) => name.endsWith('.html'))
+        .toList();
+    var outputFuture = idx.open(mode: FileMode.WRITE);
+
+    return Future.wait([filesFuture, outputFuture])
+        .then((List args) {
+          List<String> files = args[0];
+          RandomAccessFile output = args[1];
+          String content = _buildIndexHtml(title, files);
+          return output.writeString(content);
+        })
+        .then((_) => idx);
+  }
+
+  String _buildIndexHtml(String title, List files) {
+    var content = new StringBuffer()
+      ..writeln('<meta charset="utf-8">')
+      ..writeln('<title>$title</title>')
+      ..writeln('<h1>$title</h1>');
+    if (files.isEmpty) {
+      content.writeln('<p>No content</p>');
+    } else {
+      content
+          ..writeln('<ul>')
+          ..writeln(files
+              .map((f) => '<li><a href="$f">$f</a></li>')
+              .join('\n'))
+          ..write('</ul>');
+    }
+    return content.toString();
+  }
+
+  Stream<Directory> get _dirs {
+    var subs = baseDir.list(recursive: true)
+      .where((e) => e is Directory)
+      .where((Directory d) => !_isInExcludes(d.path));
+    var base = new Stream.fromIterable([baseDir]);
+
+    return _mergeStream([base, subs]);
+  }
+
+  bool _isInExcludes(String p) {
+    var relPath = path.split(path.relative(p, from: baseDir.path));
+    return excludes.any((e) => relPath.contains(e));
+  }
+
+  Stream _mergeStream(Iterable<Stream> streams) {
+    int openStreams = streams.length;
+    StreamController c = new StreamController();
+    streams.forEach((s) {
+      s.listen(c.add)
+        ..onError(c.addError)
+        ..onDone((){
+          openStreams--;
+          if (openStreams == 0) c.close();
+        });
+    });
+    return c.stream;
+  }
+
+  Stream<File> _removeIfNotExests(File file) =>
+      _removeIf(file.exists(), file);
+
+  Stream<File> _removeIfExests(File file) =>
+      _removeIf(file.exists().then((b)=> !b), file);
+
+  Stream _removeIf(Future<bool> condition, element) =>
+      condition
+        .then((e) => (e) ? element : null)
+        .asStream()
+        .where((i) => i != null);
+}
