@@ -295,7 +295,7 @@ class PixelCanvasElement extends PolymerElement {
     AnchorElement anchor = new AnchorElement()
       ..href = toDataUrl(type, quality)
       ..download = name
-      ..click();
+      ..dispatchEvent(new MouseEvent('click'));
   }
 }
 
