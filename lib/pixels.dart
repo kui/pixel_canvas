@@ -59,13 +59,16 @@ class Pixels {
 
   factory Pixels.fromJson(
       String json, int verticalPixels, int horizontalPixels) {
-    final List<List<String>> matrix = JSON.decode(json);
+    if (json.trim().isEmpty) {
+      return new Pixels(verticalPixels, horizontalPixels);
+    }
 
+    final List<List<String>> matrix = JSON.decode(json);
     if (matrix == null) {
       return new Pixels(verticalPixels, horizontalPixels);
-    } else {
-      return new Pixels.fromColorMatrix(matrix, verticalPixels, horizontalPixels);
     }
+
+    return new Pixels.fromColorMatrix(matrix, verticalPixels, horizontalPixels);
   }
 
   factory Pixels.fromPixels(Pixels oldPixels, int verticalPixels, int horizontalPixels) {
