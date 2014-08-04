@@ -1,8 +1,11 @@
 <link rel="import" href="../../packages/polymer/polymer.html">
-<polymer-element name="pixel-canvas" attributes="verticalPixels horizontalPixels pixelSize noGridlines gridlineColor gridlineWidth">
+<polymer-element name="pixel-canvas"
+  attributes="verticalPixels horizontalPixels pixelSize noGridlines
+    gridlineColor gridlineWidth drawable drawingColor">
   <template>
     <style>
       :host {
+        display: block;
         user-select: none;
         -webkit-user-select: none;
         -moz-user-select: none;
