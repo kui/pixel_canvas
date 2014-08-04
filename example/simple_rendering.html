@@ -17,11 +17,8 @@
         initPolymer();
 
         PixelCanvasElement canvas = querySelector('pixel-canvas');
-
         canvas
-            ..onBeforeRendering.listen((e) => print('render'))
-            ..onPixelColorChange.listen((e) =>
-                print('change color [ ${e.pixel}, oldColor: ${e.oldColor}]'));
+            ..onBeforeRendering.listen((e) => print('render'));
       }
     </script>
   </head>

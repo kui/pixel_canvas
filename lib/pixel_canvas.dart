@@ -74,7 +74,10 @@ class PixelCanvasElement extends PolymerElement {
       _afterRenderingEventController.stream;
 
 
-  PixelCanvasElement.created() : super.created() {
+  PixelCanvasElement.created() : super.created();
+
+  @override
+  ready() {
     _canvas = shadowRoot.getElementsByTagName('canvas').first;
     _initCanvas();
     _initCanvasContext();
@@ -82,20 +85,16 @@ class PixelCanvasElement extends PolymerElement {
     _pixels = new Pixels.fromJson(this.text, verticalPixels, horizontalPixels);
     _initPixels();
 
-    onPropertyChange(this, #noGridlines, handleNoGridlinesChange);
-    onPropertyChange(this, #pixelSize, handlePixelSizeChange);
-
-    onPropertyChange(this, #verticalpixels, handleCanvasChange);
-    onPropertyChange(this, #horizontalpixels, handleCanvasChange);
-
     render();
   }
 
   // callbacks
 
-  void handleNoGridlinesChange() {
-    renderWithDelay();
-  }
+  void noGridlinesChanged() => renderWithDelay();
+  void pixelSizeChanged()   => renderWithDelay();
+
+  void verticalPixelsChanged()   => handleCanvasChange();
+  void horizontalPixelsChanged() => handleCanvasChange();
 
   void handleCanvasChange() {
     if (verticalPixels == _pixels.verticalPixels &&
@@ -104,10 +103,6 @@ class PixelCanvasElement extends PolymerElement {
     _pixels = new Pixels.fromPixels(_pixels, horizontalPixels, verticalPixels);
     _initPixels();
     _initCanvasContext();
-    renderWithDelay();
-  }
-
-  void handlePixelSizeChange() {
     renderWithDelay();
   }
 

@@ -69,8 +69,10 @@
         // download button
 
         querySelector('#download-as-png')
-          ..onClick.listen((e) =>
-              canvas.downloadAs('pixel-canvas-sample.png'));
+          ..onClick.listen((e) {
+            print(canvas.toDataUrl());
+            canvas.downloadAs('pixel-canvas-sample.png');
+          });
       }
     </script>
   </head>
