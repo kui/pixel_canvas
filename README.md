@@ -36,8 +36,11 @@ then it will be renderd like:
 
 ![the sample of screenshot](https://raw.githubusercontent.com/kui/pixel_canvas/master/example/screenshot1.png)
 
-And, when the `drawable` attribute is attached, you can draw the canvas.
-See [demo](http://kui.github.io/pixel_canvas/) and [the code](https://github.com/kui/dots_canvas/tree/master/example/index.html)
+`drawable` attribute
+-----------------------
+
+When the `drawable` attribute is attached, you can draw the canvas.
+See [demo](http://kui.github.io/pixel_canvas/) and [it's code](https://github.com/kui/dots_canvas/tree/master/example/index.html#L99)
 
 Build and push gh-pages
 ------------------------
