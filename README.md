@@ -4,7 +4,7 @@ Pixel Canvas
 A custom element with Polymer.dart.
 
 * [Live demo](http://kui.github.io/pixel_canvas/)
-* [Examples](https://github.com/kui/dots_canvas/tree/master/example/)
+* [Example code](https://github.com/kui/dots_canvas/tree/master/example/index.html)
 
 Example Usage
 --------------
@@ -36,6 +36,8 @@ then it will be renderd like:
 
 ![the sample of screenshot](https://raw.githubusercontent.com/kui/pixel_canvas/master/example/screenshot1.png)
 
+And, when the `drawable` attribute is attached, you can draw the canvas.
+See [demo](http://kui.github.io/pixel_canvas/) and [the code](https://github.com/kui/dots_canvas/tree/master/example/index.html)
 
 Build and push gh-pages
 ------------------------
