@@ -11,6 +11,4 @@ dev_dependencies:
 transformers:
 - polymer:
     entry_points:
-    - example/simple_rendering.html
-    - example/drawing_with_click.html
-    - example/drawing_with_drag.html
+    - example/index.html
