@@ -197,7 +197,6 @@ class PixelCanvasElement extends PolymerElement {
 
   void _draw() {
     if (!drawable || _mouseOveredPx == null) return;
-    print(drawingColor);
     _mouseOveredPx.color = drawingColor;
   }
 
