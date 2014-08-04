@@ -31,7 +31,6 @@ class PixelCanvasElement extends PolymerElement {
   int gridlineWidth = 1;
 
   CanvasElement _canvas;
-  CanvasRenderingContext2D _canvasContext;
   Pixels _pixels;
   Timer _rendererTimer;
 
@@ -73,6 +72,8 @@ class PixelCanvasElement extends PolymerElement {
   Stream<PixelCanvesEvent> get onAfterRendering =>
       _afterRenderingEventController.stream;
 
+  CanvasRenderingContext2D get _canvasContext =>
+      (_canvas == null) ? null : _canvas.getContext('2d');
 
   PixelCanvasElement.created() : super.created();
 
@@ -80,7 +81,6 @@ class PixelCanvasElement extends PolymerElement {
   ready() {
     _canvas = shadowRoot.getElementsByTagName('canvas').first;
     _initCanvas();
-    _initCanvasContext();
 
     _pixels = new Pixels.fromJson(this.text, verticalPixels, horizontalPixels);
     _initPixels();
@@ -90,8 +90,8 @@ class PixelCanvasElement extends PolymerElement {
 
   // callbacks
 
-  void noGridlinesChanged() => renderWithDelay();
-  void pixelSizeChanged()   => renderWithDelay();
+  void noGridlinesChanged() => render();
+  void pixelSizeChanged()   => render();
 
   void verticalPixelsChanged()   => handleCanvasChange();
   void horizontalPixelsChanged() => handleCanvasChange();
@@ -100,10 +100,10 @@ class PixelCanvasElement extends PolymerElement {
     if (verticalPixels == _pixels.verticalPixels &&
         horizontalPixels == _pixels.horizontalPixels)
       return;
-    _pixels = new Pixels.fromPixels(_pixels, horizontalPixels, verticalPixels);
+    _pixels = new Pixels.fromPixels(_pixels, verticalPixels, horizontalPixels);
     _initPixels();
-    _initCanvasContext();
-    renderWithDelay();
+
+    render();
   }
 
   //
@@ -176,56 +176,25 @@ class PixelCanvasElement extends PolymerElement {
                           Pixel p) =>
       c.add(new PixelMouseEvent(type, this, p, e));
 
-  void _initCanvasContext() {
-    if (_canvasContext != null) {
-      clearCanvas();
-    }
-
-    _canvasContext = _canvas.getContext('2d');
-    _lineAsGrids();
-  }
-
-  void _lineAsGrids() {
-    // horizontal gridlines
-    for (int i = 0; i < verticalPixels + 1; i++) {
-      var y = pixelSize * i;
-      _canvasContext
-          ..moveTo(0, y)
-          ..lineTo(_canvas.width, y);
-    }
-
-    // vertical gridlines
-    for (int i = 0; i < horizontalPixels + 1; i++) {
-      var x = pixelSize * i;
-      _canvasContext
-          ..moveTo(x, 0)
-          ..lineTo(x, _canvas.height);
-    }
-
-    _canvasContext
-        ..lineWidth = gridlineWidth
-        ..strokeStyle = gridlineColor;
-  }
-
   void _initPixels() {
     _pixels.onColorChange.listen((e) {
       var p = new Pixel(e.x, e.y, e.newColor, _pixels);
       var change = new PixelColorChangeEvent('pixelcolorchange', this, p, e.oldColor);
       _colorChangeEventsController.add(change);
-      renderWithDelay();
-    });
-  }
-
-  void renderWithDelay() {
-    if (_rendererTimer != null) return;
-
-    _rendererTimer = new Timer(RENDERER_DELAY, () {
-      _rendererTimer = null;
       render();
     });
   }
 
   void render() {
+    if (_rendererTimer != null) return;
+
+    _rendererTimer = new Timer(RENDERER_DELAY, () {
+      _rendererTimer = null;
+      renderImmediately();
+    });
+  }
+
+  void renderImmediately() {
     _beforeRenderingEventController.add(
         new PixelCanvesEvent('beforerendering', this));
 
@@ -236,30 +205,52 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void _render() {
-    clearCanvas();
+    final ctx = _canvasContext;
+    _clear(ctx);
 
-    renderPixels();
+    _renderPixels(ctx);
     if (!noGridlines) {
-      renderGridlines();
+      _renderGridlines(ctx);
     }
   }
 
-  void renderGridlines() {
-    _canvasContext.stroke();
+  void _renderGridlines(CanvasRenderingContext2D ctx) {
+    ctx.beginPath();
+
+    // horizontal gridlines
+    for (int i = 0; i < verticalPixels + 1; i++) {
+      var y = pixelSize * i;
+      ctx
+          ..moveTo(0, y)
+          ..lineTo(_canvas.width, y);
+    }
+
+    // vertical gridlines
+    for (int i = 0; i < horizontalPixels + 1; i++) {
+      var x = pixelSize * i;
+      ctx
+          ..moveTo(x, 0)
+          ..lineTo(x, _canvas.height);
+    }
+
+    ctx
+        ..lineWidth = gridlineWidth
+        ..strokeStyle = gridlineColor;
+
+    ctx.stroke();
   }
 
-  void renderPixels() {
+  void _renderPixels(CanvasRenderingContext2D ctx) {
     _pixels.eachColorWithIndex((color, x, y) {
-      if (color == null) return;
-      if (color.length == 0) return;
-      _canvasContext
+      if (color == null || color.isEmpty) return;
+      ctx
         ..fillStyle = color
         ..fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
     });
   }
 
-  void clearCanvas() {
-    _canvasContext.clearRect(0, 0, _canvas.width, _canvas.height);
+  void _clear(CanvasRenderingContext2D ctx) {
+    ctx.clearRect(0, 0, _canvas.width, _canvas.height);
   }
 
   String getColor(int x, int y) => _pixels.get(x, y);

@@ -19,6 +19,15 @@
         PixelCanvasElement canvas = querySelector('pixel-canvas');
         canvas
             ..onBeforeRendering.listen((e) => print('render'));
+
+        querySelector('#pixel-size').onChange.listen((e) =>
+          canvas.pixelSize = int.parse(e.target.value));
+        querySelector('#hpixels').onChange.listen((e) =>
+          canvas.horizontalPixels = int.parse(e.target.value));
+        querySelector('#vpixels').onChange.listen((e) =>
+          canvas.verticalPixels = int.parse(e.target.value));
+        querySelector('#nogridlines').onChange.listen((e) =>
+          canvas.noGridlines = e.target.checked);
       }
     </script>
   </head>
@@ -26,9 +35,29 @@
 
     <p><a href="https://github.com/kui/pixel_canvas/blob/master/example/simple_rendering.html">Source code</a></p>
 
+    <table>
+      <tr>
+        <th><label for="pixel-size">Pixel Size:</label></th>
+        <td><input type="number" id="pixel-size" value="50" min="10" max="80"></td>
+      </tr>
+      <tr>
+        <th><label for="hpixels">Horizontal Pixels:</label></th>
+        <td><input type="number" id="hpixels" value="10" min="4" max="32"></td>
+      </tr>
+      <tr>
+        <th><label for="vpixels">Vertical Pixels:</label></th>
+        <td><input type="number" id="vpixels" value="10" min="4" max="32"></td>
+      </tr>
+      <tr>
+        <th><label for="nogridlines">No Gridlines:</label></th>
+        <td><input type="checkbox" id="nogridlines">
+      </td>
+    </table>
+
     <!-- -----------------------------------------
       Sample
     ------------------------------------------ -->
+
     <pixel-canvas verticalPixels="10" horizontalPixels="10" PixelSize="50">
       [
         ["green"],

@@ -8,21 +8,21 @@ import 'dart:convert';
  * Model
  */
 class Pixels {
-  static const JSON_PARSER = const JsonDecoder();
-
   final List<List<String>> _colors;
   final StreamController<ColorChangeEvent> _colorChangeController =
       new StreamController.broadcast();
 
   Pixels(int verticalPixels, int horizontalPixels) :
-    this._colors = createMatrix(verticalPixels, horizontalPixels);
+    this._colors = _createMatrix(verticalPixels, horizontalPixels);
 
-  static List<List<String>> createMatrix(
+  static List<List<String>> _createMatrix(
       int verticalPixels, int horizontalPixels) {
+
     if (verticalPixels == null)
       throw new ArgumentError('Expected verticalPixels to be non-null');
     if (horizontalPixels == null)
       throw new ArgumentError('Expected horizontalPixels to be non-null');
+
     return new List<List<String>>.generate(
           verticalPixels,
           (i) => new List<String>.filled(horizontalPixels, null));
@@ -59,7 +59,7 @@ class Pixels {
 
   factory Pixels.fromJson(
       String json, int verticalPixels, int horizontalPixels) {
-    List<List<String>> matrix = JSON_PARSER.convert(json);
+    final List<List<String>> matrix = JSON.decode(json);
 
     if (matrix == null) {
       return new Pixels(verticalPixels, horizontalPixels);
@@ -87,7 +87,7 @@ class Pixels {
     var maxRowLength = verticalPixels;
     for(int i = 0; i < maxColLength; i++) {
       for(int j = 0; j < maxRowLength; j++) {
-        f(get(j, i), j, i);
+        f(get(i, j), i, j);
       }
     }
   }

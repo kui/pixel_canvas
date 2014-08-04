@@ -73,12 +73,42 @@
             print(canvas.toDataUrl());
             canvas.downloadAs('pixel-canvas-sample.png');
           });
+
+        // canvas properties
+
+        querySelector('#pixel-size').onChange.listen((e) =>
+          canvas.pixelSize = int.parse(e.target.value));
+        querySelector('#hpixels').onChange.listen((e) =>
+          canvas.horizontalPixels = int.parse(e.target.value));
+        querySelector('#vpixels').onChange.listen((e) =>
+          canvas.verticalPixels = int.parse(e.target.value));
+        querySelector('#nogridlines').onChange.listen((e) =>
+          canvas.noGridlines = e.target.checked);
       }
     </script>
   </head>
   <body bgcolor="#eee">
 
     <p><a href="https://github.com/kui/pixel_canvas/blob/master/example/drawing_with_drag.html">Source code</a></p>
+
+    <table>
+      <tr>
+        <th><label for="pixel-size">Pixel Size:</label></th>
+        <td><input type="number" id="pixel-size" value="50" min="10" max="80"></td>
+      </tr>
+      <tr>
+        <th><label for="hpixels">Horizontal Pixels:</label></th>
+        <td><input type="number" id="hpixels" value="10" min="4" max="32"></td>
+      </tr>
+      <tr>
+        <th><label for="vpixels">Vertical Pixels:</label></th>
+        <td><input type="number" id="vpixels" value="10" min="4" max="32"></td>
+      </tr>
+      <tr>
+        <th><label for="nogridlines">No Gridlines:</label></th>
+        <td><input type="checkbox" id="nogridlines">
+      </td>
+    </table>
 
     <p>Click or drag pixels</p>
 
