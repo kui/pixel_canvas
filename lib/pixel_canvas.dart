@@ -11,6 +11,7 @@ class PixelCanvasElement extends PolymerElement {
   static const CANVAS_FPS = 30;
   static final RENDERER_DELAY =
       new Duration(milliseconds: (1000/CANVAS_FPS).floor());
+  static const LEFT_BUTTON = 1;
 
   @published
   int verticalPixels = 32;
@@ -25,14 +26,22 @@ class PixelCanvasElement extends PolymerElement {
   bool noGridlines = false;
 
   @published
-  String gridlineColor = 'rgba(0, 0, 0, 0.3)';
+  String gridlineColor = 'rgba(0, 0, 0, 0.2)';
 
   @published
   int gridlineWidth = 1;
 
+  @published
+  bool drawable = false;
+
+  @published
+  String drawingColor = 'black';
+
   CanvasElement _canvas;
   Pixels _pixels;
   Timer _rendererTimer;
+  Pixel _mouseOveredPx = null;
+  bool _isMouseDown = false;
 
   StreamController<PixelMouseEvent> _mouseMoveEventsController =
       new StreamController.broadcast();
@@ -82,7 +91,7 @@ class PixelCanvasElement extends PolymerElement {
     _canvas = shadowRoot.getElementsByTagName('canvas').first;
     _initCanvas();
 
-    _pixels = new Pixels.fromJson(this.text, verticalPixels, horizontalPixels);
+    _pixels = new Pixels.fromJson(text, verticalPixels, horizontalPixels);
     _initPixels();
 
     render();
@@ -109,72 +118,90 @@ class PixelCanvasElement extends PolymerElement {
   //
 
   void _initCanvas() {
-    _initCustomEventListener();
+    _initEvents();
   }
 
-  void _initCustomEventListener() {
-    // binded value: the pixel which be mouse-overed currently
-    Pixel currentPx = null;
-
-    _canvas.onMouseMove.listen((MouseEvent event) {
-      var px = detectPixel(event);
-      if (px == null) {
-        currentPx == null;
-        return;
-      }
-      dispatchPixelMouseEvent(_mouseMoveEventsController, 'pixelmousemove',
-          event, px);
-
-      if (px.equalsOnPoint(currentPx)) {
-        return;
-      }
-
-      if (currentPx != null) {
-        dispatchPixelMouseEvent(_mouseOutEventsController, 'pixelmouseout',
-            event, currentPx);
-      }
-      dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
-          event, px);
-
-      currentPx = px;
-    });
-
-    _canvas.onMouseOut.listen((MouseEvent event) {
-      dispatchPixelMouseEvent(_mouseOutEventsController, 'pixelmouseout',
-          event, currentPx);
-      currentPx = null;
-    });
-
-    _canvas.onMouseOver.listen((MouseEvent event) {
-      var px = detectPixel(event);
-      if (px != null) {
-        dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
-            event, px);
-      }
-      currentPx = px;
-    });
-
-    _canvas.onClick.listen((MouseEvent event) {
-      dispatchPixelMouseEvent(_clickEventsController, 'pixelclick', event,
-          currentPx);
-    });
-
-    _canvas.onMouseDown.listen((MouseEvent event) {
-      dispatchPixelMouseEvent(_mouseDownEventsController, 'pixelmousedown',
-          event, currentPx);
-    });
-
-    _canvas.onMouseUp.listen((MouseEvent event) {
-      dispatchPixelMouseEvent(_mouseUpEventsController, 'pixelmouseup', event,
-          currentPx);
-    });
+  void _initEvents() {
+    _canvas
+        ..onMouseMove.listen(_handleMouseMove)
+        ..onMouseOut.listen(_handleMouseOut)
+        ..onMouseOver.listen(_handleMouseOver)
+        ..onClick.listen((MouseEvent event) =>
+            _dispatchPixelMouseEvent(_clickEventsController, 'pixelclick', event,
+                _mouseOveredPx))
+        ..onMouseDown.listen(_handleMouseDown)
+        ..onMouseUp.listen((MouseEvent event) =>
+            _dispatchPixelMouseEvent(_mouseUpEventsController, 'pixelmouseup',
+                event, _mouseOveredPx));
+    document
+        ..onMouseUp.listen((e) {
+          if (_isLeftButton(e)) _isMouseDown = false;
+        });
   }
 
-  dispatchPixelMouseEvent(StreamController c,
-                          String type,
-                          MouseEvent e,
-                          Pixel p) =>
+  _handleMouseDown(MouseEvent event) {
+    _dispatchPixelMouseEvent(_mouseDownEventsController,
+        'pixelmousedown', event, _mouseOveredPx);
+
+    _startDrawing(event);
+  }
+
+  _handleMouseOver(MouseEvent event) {
+    var px = detectPixel(event);
+    if (px != null) {
+      _dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
+          event, px);
+    }
+    _mouseOveredPx = px;
+  }
+
+  _handleMouseOut(MouseEvent event) {
+    _dispatchPixelMouseEvent(_mouseOutEventsController, 'pixelmouseout',
+        event, _mouseOveredPx);
+    _mouseOveredPx = null;
+  }
+
+  _handleMouseMove(MouseEvent event) {
+    var px = detectPixel(event);
+    if (px == null) {
+      _mouseOveredPx == null;
+      return;
+    }
+    _dispatchPixelMouseEvent(_mouseMoveEventsController, 'pixelmousemove',
+        event, px);
+
+    if (px.equalsOnPoint(_mouseOveredPx)) {
+      return;
+    }
+
+    if (_mouseOveredPx != null) {
+      _dispatchPixelMouseEvent(_mouseOutEventsController, 'pixelmouseout',
+          event, _mouseOveredPx);
+    }
+
+    _mouseOveredPx = px;
+    _dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
+        event, px);
+    if (_isMouseDown) _draw();
+  }
+
+  _dispatchPixelMouseEvent(StreamController c, String type, MouseEvent e, Pixel p) =>
       c.add(new PixelMouseEvent(type, this, p, e));
+
+  void _startDrawing(MouseEvent e) {
+    if (!_isLeftButton(e)) return;
+
+    _isMouseDown = true;
+    _draw();
+  }
+
+  void _draw() {
+    if (!drawable || _mouseOveredPx == null) return;
+    print(drawingColor);
+    _mouseOveredPx.color = drawingColor;
+  }
+
+  static bool _isLeftButton(MouseEvent e) => LEFT_BUTTON == e.which;
 
   void _initPixels() {
     _pixels.onColorChange.listen((e) {
@@ -242,7 +269,7 @@ class PixelCanvasElement extends PolymerElement {
 
   void _renderPixels(CanvasRenderingContext2D ctx) {
     _pixels.eachColorWithIndex((color, x, y) {
-      if (color == null || color.isEmpty) return;
+      if (color == null || color.trim().isEmpty) return;
       ctx
         ..fillStyle = color
         ..fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);

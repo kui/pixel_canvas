@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Sample Usage Pixel Canvas</title>
+    <script src="packages/web_components/platform.js"></script>
+    <script src="packages/web_components/dart_support.js"></script>
+
+    <link rel="import" href="packages/pixel_canvas/pixel_canvas.html">
+
+    <script type="application/dart">
+      import 'package:polymer/polymer.dart';
+      import 'package:pixel_canvas/pixel_canvas.dart';
+      import 'dart:html';
+
+      main() {
+        initPolymer()..run(() {
+          PixelCanvasElement canvas = querySelector('pixel-canvas');
+
+          // you can set callbacks for every re-rendering
+          canvas
+              ..onBeforeRendering.listen((e) => print('render'));
+
+          // pixel-canvas can be downloaded with downloadAs()
+          querySelector('#download-as-png').onClick.listen((e) =>
+              canvas.downloadAs('pixel-canvas.png'));
+
+          // sync attribute values
+          querySelector('#pixel-size').onChange.listen((e) =>
+              canvas.pixelSize = int.parse(e.target.value));
+          querySelector('#hpixels').onChange.listen((e) =>
+              canvas.horizontalPixels = int.parse(e.target.value));
+          querySelector('#vpixels').onChange.listen((e) =>
+              canvas.verticalPixels = int.parse(e.target.value));
+          querySelector('#nogridlines').onChange.listen((e) =>
+              canvas.noGridlines = e.target.checked);
+          querySelector('#drawable').onChange.listen((e) =>
+              canvas.drawable = e.target.checked);
+          querySelector('#dcolor').onInput.listen((e) =>
+              canvas.drawingColor = e.target.value);
+        });
+      }
+    </script>
+  </head>
+  <body bgcolor="#eee">
+
+    <p><a href="https://github.com/kui/pixel_canvas/blob/master/example/index.html">Source code</a></p>
+
+    <table border="1">
+      <thead>
+        <tr><th>Atrribute Name</th><th>Value</th></tr>
+      </thead>
+      <tr>
+        <th><label for="pixel-size">pixelSize:</label></th>
+        <td><input type="number" id="pixel-size" value="50" min="10" max="80"></td>
+      </tr>
+      <tr>
+        <th><label for="hpixels">horizontalPixels:</label></th>
+        <td><input type="number" id="hpixels" value="10" min="4" max="32"></td>
+      </tr>
+      <tr>
+        <th><label for="vpixels">verticalPixels:</label></th>
+        <td><input type="number" id="vpixels" value="10" min="4" max="32"></td>
+      </tr>
+      <tr>
+        <th><label for="nogridlines">noGridlines:</label></th>
+        <td><input type="checkbox" id="nogridlines"></td>
+      </tr>
+      <tr>
+        <th><label for="drawable">drawable:</label></th>
+        <td><input type="checkbox" id="drawable" checked></td>
+      </tr>
+      <tr>
+        <th><label for="dcolor">drawingColor:</label></th>
+        <td>
+          <input type="text" id="dcolor" value="Black" list="dcolors">
+          <datalist id="dcolors">
+            <option value=" ">
+            <option value="Black">
+            <option value="White">
+            <option value="Red">
+            <option value="Green">
+            <option value="Blue">
+            <option value="rgb(0, 255, 255)">
+            <option value="rgba(0, 255, 255, 0.3)">
+            <option value="#666">
+            <option value="#c0c1c2">
+          </datalist>
+        </td>
+      </tr>
+    </table>
+
+    <p>Click/drag the grids</p>
+
+    <!-- -----------------------------------------
+      Sample
+    ------------------------------------------ -->
+
+    <pixel-canvas verticalPixels="10" horizontalPixels="10" pixelSize="50" drawable drawingColor="Black">
+      [
+        ["green"],
+        ["red", null, "blue"],
+        ["rgb(255, 128, 128)", "rgb(128, 255, 128)", "rgb(128, 128, 255)"],
+        [null, null, "#f00", "#333", "#ffffff", "#abab00"],
+        null,
+        [],
+        ["", ""],
+        ["rgba(0, 255, 255, 0.2)",
+         "rgba(0, 255, 255, 0.4)",
+         "rgba(0, 255, 255, 0.6)",
+         "rgba(0, 255, 255, 0.8)",
+         "rgba(0, 255, 255, 1.0)"]
+      ]
+    </pixel-canvas>
+    <p><button id="download-as-png">Dowmload As PNG</button></p>
+
+    <a href="https://github.com/kui/pixel_canvas"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+  </body>
+</html>
