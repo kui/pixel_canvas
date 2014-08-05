@@ -3,20 +3,25 @@ library pixel_canvas.src.area;
 import 'dart:math';
 import '../pixels.dart';
 
-class Area {
+abstract class Area {
+  Pixels get pixels;
+  Set<Point<int>> get points;
+}
+
+class PointSetArea extends Area {
   final Pixels pixels;
   final Set<Point<int>> points;
 
-  Area._(this.pixels, this.points);
+  PointSetArea._(this.pixels, this.points);
 
-  factory Area(Pixels pixels, Set<Point<int>> points) {
+  factory PointSetArea(Pixels pixels, Set<Point<int>> points) {
     final rect = pixels.rectangle;
     final p = points.where(rect.containsPoint).toSet();
-    return new Area(pixels, p);
+    return new PointSetArea(pixels, p);
   }
 }
 
-class RectArea implements Area {
+class RectArea extends Area {
   final Pixels pixels;
   final Rectangle<int> rectangle;
 
@@ -43,7 +48,7 @@ class RectArea implements Area {
   }
 }
 
-class SameColorArea implements Area {
+class SameColorArea extends Area {
   final Pixels pixels;
   final String basicColor;
 
@@ -60,7 +65,7 @@ class SameColorArea implements Area {
   }
 }
 
-class NeighborSameColorArea extends SameColorArea implements Area {
+class NeighborSameColorArea extends SameColorArea with Area {
   static const LEFT = const Point(-1, 0);
   static const RIGHT = const Point(1, 0);
   static const UPPER = const Point(0, -1);
