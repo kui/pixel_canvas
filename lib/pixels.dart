@@ -84,7 +84,8 @@ class Pixels {
   int get verticalPixels => _colors.length;
   int get horizontalPixels => _colors.first.length;
   Stream<ColorChangeEvent> get onColorChange => _colorChangeController.stream;
-  Rectangle<int> get rectangle => new Rectangle(0, 0, horizontalPixels, verticalPixels);
+  Rectangle<int> get rectangle =>
+      new Rectangle(0, 0, horizontalPixels - 1, verticalPixels - 1);
 
   void eachColorWithIndex(void f(String color, int x, int y)) {
     var maxColLength = horizontalPixels;
