@@ -1,4 +1,4 @@
-library pixel_canvas.src.area;
+library pixel_canvas.src.bounds;
 
 import 'dart:math';
 import 'dart:collection';
@@ -12,7 +12,7 @@ const _LOWER = const Point(0, 1);
 List<Point<int>> _getArounds(Point<int> p) =>
   [p + _LEFT, p + _RIGHT, p + _UPPER, p + _LOWER];
 
-abstract class Area {
+abstract class Bounds {
   Pixels get pixels;
   Set<Point<int>> get points;
 
@@ -34,24 +34,24 @@ abstract class Area {
   }
 }
 
-class UnshapedArea extends Area {
+class UnshapedBounds extends Bounds {
   final Pixels pixels;
   final Set<Point<int>> points;
 
-  UnshapedArea._(this.pixels, this.points);
+  UnshapedBounds._(this.pixels, this.points);
 
-  factory UnshapedArea(Pixels pixels, Set<Point<int>> points) {
+  factory UnshapedBounds(Pixels pixels, Set<Point<int>> points) {
     final rect = pixels.rectangle;
     final p = points.where(rect.containsPoint).toSet();
-    return new UnshapedArea._(pixels, p);
+    return new UnshapedBounds._(pixels, p);
   }
 }
 
-class RectArea extends Area {
+class RectBounds extends Bounds {
   final Pixels pixels;
   final Rectangle<int> rectangle;
 
-  RectArea(this.pixels, int left, int top, int width, int height) :
+  RectBounds(this.pixels, int left, int top, int width, int height) :
     this.rectangle = new Rectangle(left, top, width, height);
 
   @override
@@ -105,11 +105,11 @@ class RectArea extends Area {
   }
 }
 
-class SameColorArea extends Area {
+class SameColorBounds extends Bounds {
   final Pixels pixels;
   final String basicColor;
 
-  SameColorArea(this.pixels, this.basicColor);
+  SameColorBounds(this.pixels, this.basicColor);
 
   @override
   Set<Point<int>> get points {
@@ -122,13 +122,13 @@ class SameColorArea extends Area {
   }
 }
 
-class NeighborSameColorArea extends SameColorArea with Area {
+class NeighborSameColorBounds extends SameColorBounds with Bounds {
   final Point<int> basicPoint;
 
-  NeighborSameColorArea._(Pixels pixels, String basicColor, this.basicPoint):
+  NeighborSameColorBounds._(Pixels pixels, String basicColor, this.basicPoint):
     super(pixels, basicColor);
-  factory NeighborSameColorArea(Pixels pixels, Point<int> basicPoint) =>
-      new NeighborSameColorArea._(pixels, pixels.getByPoint(basicPoint), basicPoint);
+  factory NeighborSameColorBounds(Pixels pixels, Point<int> basicPoint) =>
+      new NeighborSameColorBounds._(pixels, pixels.getByPoint(basicPoint), basicPoint);
 
   @override
   Iterable<Point<int>> get points {
