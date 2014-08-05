@@ -39,7 +39,7 @@ class Pixels {
   }
 
   factory Pixels.fromColorMatrix(
-      List<List<String>> colors, int verticalPixels, int horizontalPixels) {
+      List<List<String>> colors, int horizontalPixels, int verticalPixels) {
     if (colors == null)
       throw new ArgumentError('Expected 1st arg to be non-null');
 
@@ -68,7 +68,7 @@ class Pixels {
       return new Pixels(verticalPixels, horizontalPixels);
     }
 
-    return new Pixels.fromColorMatrix(matrix, verticalPixels, horizontalPixels);
+    return new Pixels.fromColorMatrix(matrix, horizontalPixels, verticalPixels);
   }
 
   factory Pixels.fromPixels(Pixels oldPixels, int verticalPixels, int horizontalPixels) {
@@ -76,7 +76,7 @@ class Pixels {
       throw new ArgumentError('Expected 1st arg to be non-null');
 
     return new Pixels.fromColorMatrix(
-        oldPixels._colors, verticalPixels, horizontalPixels);
+        oldPixels._colors, horizontalPixels, verticalPixels);
   }
 
   //
@@ -84,6 +84,7 @@ class Pixels {
   int get verticalPixels => _colors.length;
   int get horizontalPixels => _colors.first.length;
   Stream<ColorChangeEvent> get onColorChange => _colorChangeController.stream;
+  Rectangle<int> get rectangle => new Rectangle(0, 0, horizontalPixels, verticalPixels);
 
   void eachColorWithIndex(void f(String color, int x, int y)) {
     var maxColLength = horizontalPixels;
