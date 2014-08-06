@@ -17,9 +17,10 @@
     <link rel="import" href="packages/pixel_canvas/pixel_canvas.html">
 
     <script type="application/dart">
+      import 'dart:html';
+      import 'dart:math';
       import 'package:polymer/polymer.dart';
       import 'package:pixel_canvas/pixel_canvas.dart';
-      import 'dart:html';
 
       main() {
         initPolymer().run(() {
@@ -32,6 +33,16 @@
           // pixel-canvas can be downloaded with downloadAs()
           querySelector('#download-as-png').onClick.listen((e) =>
               canvas.downloadAs('pixel-canvas.png'));
+          querySelector('#select-by-points').onClick.listen((e) =>
+              canvas.select([new Point(0, 0), new Point(3, 0)]));
+          querySelector('#select-by-rectangle').onClick.listen((e) =>
+              canvas.selectByRectangle(0, 1, 3, 2));
+          querySelector('#select-by-color').onClick.listen((e) =>
+              canvas.selectByColor('Black'));
+          querySelector('#select-by-color-neighbor').onClick.listen((e) =>
+              canvas.selectByColorNeibors(new Point(0,0)));
+          querySelector('#clear-selection').onClick.listen((e) =>
+              canvas.clearSelection());
 
           // sync attribute values
           querySelector('#pixel-size').onChange.listen((e) =>
@@ -52,15 +63,18 @@
   </head>
   <body>
 
+    <h1>Sample Usage Pixel Canvas</h1>
+
     <p><a href="https://github.com/kui/pixel_canvas/blob/master/example/index.html">Source code</a></p>
 
+    <h2>Attributes</h2>
     <table border="1">
       <thead>
         <tr><th>Atrribute Name</th><th>Value</th></tr>
       </thead>
       <tr>
         <th><label for="pixel-size">pixelSize:</label></th>
-        <td><input type="number" id="pixel-size" value="50" min="10" max="80"></td>
+        <td><input type="number" id="pixel-size" value="50" min="10" max="80">px</td>
       </tr>
       <tr>
         <th><label for="hpixels">horizontalPixels:</label></th>
@@ -98,6 +112,16 @@
       </tr>
     </table>
 
+    <h2>Methods</h2>
+    <p>
+      <button id="download-as-png">dowmloadAs('pixel-canas.png')</button>
+      <button id="select-by-points">select([new Point(0, 0), new Point(3, 0)])</button>
+      <button id="select-by-rectangle">selectByRectangle(0, 1, 3, 2)</button>
+      <button id="select-by-color">selectByColor('Black')</button>
+      <button id="select-by-color-neighbor">selectByColorNeighbor(new Point(0,0))</button>
+      <button id="clear-selection">clearSelection()</button>
+    </p>
+
     <p>Click/drag the grids</p>
 
     <!-- -----------------------------------------
@@ -120,8 +144,6 @@
          "rgba(0, 255, 255, 1.0)"]
       ]
     </pixel-canvas>
-
-    <p><button id="download-as-png">dowmloadAs('pixel-canas.png')</button></p>
 
     <a href="https://github.com/kui/pixel_canvas"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
   </body>

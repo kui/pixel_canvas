@@ -1,143 +1,57 @@
 library pixel_canvas.src.bounds;
 
 import 'dart:math';
-import 'dart:collection';
+import 'outlinable.dart';
 import '../pixels.dart';
 
-const _LEFT = const Point(-1, 0);
-const _RIGHT = const Point(1, 0);
-const _UPPER = const Point(0, -1);
-const _LOWER = const Point(0, 1);
-
-List<Point<int>> _getArounds(Point<int> p) =>
-  [p + _LEFT, p + _RIGHT, p + _UPPER, p + _LOWER];
-
-abstract class Bounds {
-  Pixels get pixels;
-  Set<Point<int>> get points;
-
-  Set<Line> get outline {
-    final int width = pixels.horizontalPixels;
-    final int height = pixels.verticalPixels;
-    final Set<Point<int>> pts = new HashSet.from(points);
-
-    return pts.map((p) {
-      final lines = [];
-      final upper = p + _UPPER, lower = p + _LOWER,
-          left = p + _LEFT, right = p + _RIGHT;
-      if (!pts.contains(upper)) lines.add(new HorizontalLine(p));
-      if (!pts.contains(lower)) lines.add(new HorizontalLine(lower));
-      if (!pts.contains(left))  lines.add(new VerticalLine(p));
-      if (!pts.contains(right)) lines.add(new VerticalLine(right));
-      return lines;
-    }).expand((List<Line> lines) => lines).toSet();
-  }
-}
-
-class UnshapedBounds extends Bounds {
-  final Pixels pixels;
+class Bounds extends Outlinable {
   final Set<Point<int>> points;
 
-  UnshapedBounds._(this.pixels, this.points);
+  Bounds._(this.points);
 
-  factory UnshapedBounds(Pixels pixels, Set<Point<int>> points) {
+  factory Bounds(Pixels pixels, Iterable<Point<int>> points) {
     final rect = pixels.rectangle;
     final p = points.where(rect.containsPoint).toSet();
-    return new UnshapedBounds._(pixels, p);
+    return new Bounds._(p);
   }
-}
 
-class RectBounds extends Bounds {
-  final Pixels pixels;
-  final Rectangle<int> rectangle;
-
-  RectBounds(this.pixels, int left, int top, int width, int height) :
-    this.rectangle = new Rectangle(left, top, width, height);
-
-  @override
-  Set<Point<int>> get points {
+  factory Bounds.fromRectangle(Pixels pixels, Rectangle rectangle) {
     final Rectangle<int> intersects = rectangle.intersection(pixels.rectangle);
     if (intersects == null)
-      return new HashSet();
+      return new Bounds._(new Set());
 
     final base = intersects.topLeft;
     final width = intersects.width;
     final height = intersects.height;
 
-    final points = new HashSet<Point<int>>();
+    final points = new Set<Point<int>>();
     for (int x = 0; x <= width; x++) {
       for (int y = 0; y <= height; y++) {
         points.add(new Point<int>(base.x + x, base.y + y));
       }
     }
-    return points;
+    return new Bounds._(points);
   }
 
-  @override
-  Set<Line> get outline {
-    final Rectangle<int> intersects = rectangle.intersection(pixels.rectangle);
-    if (intersects == null)
-      return new HashSet();
-
-    final base = intersects.topLeft;
-    final width = intersects.width;
-    final height = intersects.height;
-
-    final lines = new HashSet<Line>();
-
-    // upper horizontal lines
-    for(int x = 0; x <= width; x++)
-      lines.add(new HorizontalLine(new Point<int>(base.x + x, base.y)));
-
-    // lower horizontal lines
-    for(int x = 0; x <= width; x++)
-      lines.add(new HorizontalLine(new Point<int>(base.x + x, base.y + height + 1)));
-
-    // left vertical lines
-    for(int y = 0; y <= height; y++)
-      lines.add(new VerticalLine(new Point<int>(base.x, base.y + y)));
-
-    // right vertical lines
-    for(int y = 0; y <= height; y++)
-      lines.add(new VerticalLine(new Point<int>(base.x + width + 1, base.y + y)));
-
-    return lines;
-  }
-}
-
-class SameColorBounds extends Bounds {
-  final Pixels pixels;
-  final String basicColor;
-
-  SameColorBounds(this.pixels, this.basicColor);
-
-  @override
-  Set<Point<int>> get points {
-    final points = new HashSet();
+  factory Bounds.sameColor(Pixels pixels, String basicColor) {
+    final points = new Set();
     pixels.eachColorWithIndex((color, x, y) {
       if (color != basicColor) return;
       points.add(new Point<int>(x, y));
     });
-    return points;
-  }
-}
-
-class NeighborSameColorBounds extends SameColorBounds with Bounds {
-  final Point<int> basicPoint;
-
-  NeighborSameColorBounds._(Pixels pixels, String basicColor, this.basicPoint):
-    super(pixels, basicColor);
-  factory NeighborSameColorBounds(Pixels pixels, Point<int> basicPoint) =>
-      new NeighborSameColorBounds._(pixels, pixels.getByPoint(basicPoint), basicPoint);
-
-  @override
-  Iterable<Point<int>> get points {
-    final sameColors = super.points;
-    if (sameColors.isEmpty) return new HashSet();
-    return _getNeighborsWithPointers([basicPoint], sameColors).toSet();
+    return new Bounds._(points);
   }
 
-  Iterable<Point<int>> _getNeighborsWithPointers(List<Point<int>> basics, Iterable<Point<int>> targets) {
+  factory Bounds.sameColorNeighbors(Pixels pixels, Point<int> basicPoint) {
+    final sameColors =
+        new Bounds.sameColor(pixels, pixels.getByPoint(basicPoint));
+    if (sameColors.points.isEmpty) return sameColors;
+
+    final points = _getNeighborsWithPointers([basicPoint], sameColors.points);
+    return new Bounds._(points.toSet());
+  }
+
+  static Iterable<Point<int>> _getNeighborsWithPointers(List<Point<int>> basics, Iterable<Point<int>> targets) {
     final parentPoints = [];
     parentPoints.addAll(targets); // clone
 
@@ -153,31 +67,6 @@ class NeighborSameColorBounds extends SameColorBounds with Bounds {
     neighbors.addAll(basics);
     return _getNeighborsWithPointers(neighbors, parentPoints);
   }
-
-  List<Point<int>> _getNeiborsWithPointer(Point<int> basic, List<Point<int>> targets) =>
-      _getArounds(basic).where(targets.contains).toList(growable: false);
-}
-
-abstract class Line {
-  Point<int> get base;
-  int get _typeCode;
-  @override
-  int get hashCode => (_typeCode * 31 + base.hashCode) & 0x3fffffff;
-  @override
-  bool operator ==(o) =>
-    o is Line && o._typeCode == _typeCode && o.base == base;
-}
-class HorizontalLine extends Line {
-  final Point<int> base;
-  final int _typeCode = 0;
-  HorizontalLine(this.base);
-  @override
-  String toString() => 'HLine(${base.x}, ${base.y})';
-}
-class VerticalLine extends Line {
-  final Point<int> base;
-  final int _typeCode = 1;
-  VerticalLine(this.base);
-  @override
-  String toString() => 'VLine(${base.x}, ${base.y})';
+  static Set<Point<int>> _getNeiborsWithPointer(Point<int> basic, List<Point<int>> targets) =>
+      getArounds(basic).where(targets.contains).toSet();
 }

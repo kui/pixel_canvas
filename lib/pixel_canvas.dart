@@ -1,9 +1,12 @@
 library pixel_canvas.element;
 
-import 'package:polymer/polymer.dart';
 import 'dart:html';
 import 'dart:async';
+import 'package:polymer/polymer.dart';
 import 'pixels.dart';
+import 'src/bounds.dart';
+import 'src/editor.dart';
+import 'src/outlinable.dart';
 
 @CustomTag('pixel-canvas')
 class PixelCanvasElement extends PolymerElement {
@@ -12,6 +15,7 @@ class PixelCanvasElement extends PolymerElement {
   static final RENDERER_DELAY =
       new Duration(milliseconds: (1000/CANVAS_FPS).floor());
   static const LEFT_BUTTON = 1;
+  static const DASH_INTERVAL = 6;
 
   @published
   int verticalPixels = 32;
@@ -37,8 +41,15 @@ class PixelCanvasElement extends PolymerElement {
   @published
   String drawingColor = 'black';
 
+  @published
+  Bounds selectedBounds;
+
+  @published
+  FloatLayer floatLayer;
+
   CanvasElement _canvas;
   Pixels _pixels;
+  Editor _editor;
   Timer _rendererTimer;
   Pixel _mouseOveredPx = null;
   bool _isMouseDown = false;
@@ -97,15 +108,15 @@ class PixelCanvasElement extends PolymerElement {
     render();
   }
 
-  // callbacks
+  // property changed callbacks
 
-  void noGridlinesChanged() => render();
-  void pixelSizeChanged()   => render();
+  noGridlinesChanged() => render();
+  pixelSizeChanged()   => render();
 
-  void verticalPixelsChanged()   => handleCanvasChange();
-  void horizontalPixelsChanged() => handleCanvasChange();
+  verticalPixelsChanged()   => handleCanvasChange();
+  horizontalPixelsChanged() => handleCanvasChange();
 
-  void handleCanvasChange() {
+  handleCanvasChange() {
     if (verticalPixels == _pixels.verticalPixels &&
         horizontalPixels == _pixels.horizontalPixels)
       return;
@@ -114,6 +125,9 @@ class PixelCanvasElement extends PolymerElement {
 
     render();
   }
+
+  selectedBoundsChanged() => render();
+  floatLayerChanged() => render();
 
   //
 
@@ -153,6 +167,7 @@ class PixelCanvasElement extends PolymerElement {
           event, px);
     }
     _mouseOveredPx = px;
+    _updateCursor(px);
   }
 
   _handleMouseOut(MouseEvent event) {
@@ -170,7 +185,7 @@ class PixelCanvasElement extends PolymerElement {
     _dispatchPixelMouseEvent(_mouseMoveEventsController, 'pixelmousemove',
         event, px);
 
-    if (px.equalsOnPoint(_mouseOveredPx)) {
+    if (px.equalsPoint(_mouseOveredPx)) {
       return;
     }
 
@@ -182,7 +197,16 @@ class PixelCanvasElement extends PolymerElement {
     _mouseOveredPx = px;
     _dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
         event, px);
+    _updateCursor(px);
     if (_isMouseDown) _draw();
+  }
+
+  void _updateCursor(Pixel px) {
+    if (px != null && px.isSelected) {
+      this.style.cursor = 'crosshair';
+    } else {
+      this.style.cursor = 'default';
+    }
   }
 
   _dispatchPixelMouseEvent(StreamController c, String type, MouseEvent e, Pixel p) =>
@@ -198,17 +222,20 @@ class PixelCanvasElement extends PolymerElement {
   void _draw() {
     if (!drawable || _mouseOveredPx == null) return;
     _mouseOveredPx.color = drawingColor;
+    //_selecteds = null; // invalidate the selecteds cache
+    clearSelection();
   }
 
   static bool _isLeftButton(MouseEvent e) => LEFT_BUTTON == e.which;
 
   void _initPixels() {
     _pixels.onColorChange.listen((e) {
-      var p = new Pixel(e.x, e.y, e.newColor, _pixels);
+      var p = new Pixel(e.x, e.y, e.newColor, this);
       var change = new PixelColorChangeEvent('pixelcolorchange', this, p, e.oldColor);
       _colorChangeEventsController.add(change);
       render();
     });
+    _editor = new Editor(_pixels);
   }
 
   void render() {
@@ -224,19 +251,24 @@ class PixelCanvasElement extends PolymerElement {
     _beforeRenderingEventController.add(
         new PixelCanvesEvent('beforerendering', this));
 
-    _render();
+    final ctx = _canvasContext;
+    _render(ctx);
 
     _afterRenderingEventController.add(
         new PixelCanvesEvent('afterrendering', this));
   }
 
-  void _render() {
-    final ctx = _canvasContext;
+  void _render(CanvasRenderingContext2D ctx) {
     _clear(ctx);
 
     _renderPixels(ctx);
     if (!noGridlines) {
       _renderGridlines(ctx);
+    }
+    if (selectedBounds != null) {
+      _renderSelections(ctx, selectedBounds.outline);
+    } else if (floatLayer != null) {
+      _renderSelections(ctx, floatLayer.outline);
     }
   }
 
@@ -261,14 +293,38 @@ class PixelCanvasElement extends PolymerElement {
 
     ctx
         ..lineWidth = gridlineWidth
-        ..strokeStyle = gridlineColor;
+        ..strokeStyle = gridlineColor
+        ..setLineDash([])
+        ..stroke();
+  }
 
-    ctx.stroke();
+  void _renderSelections(CanvasRenderingContext2D ctx, Set<Line> lines) {
+    ctx.beginPath();
+    for(Line l in lines) {
+      final p = l.base;
+      final x = p.x * pixelSize;
+      final y = p.y * pixelSize;
+      ctx.moveTo(x, y);
+      if (l is HorizontalLine) {
+        ctx.lineTo(x + pixelSize, y);
+      } else { // l is VerticalLine
+        ctx.lineTo(x, y + pixelSize);
+      }
+    }
+    ctx
+      ..lineWidth = gridlineWidth + 1
+      ..strokeStyle = 'rgba(0,0,0,0.5)'
+      ..setLineDash([DASH_INTERVAL])
+      ..lineDashOffset = 0
+      ..stroke()
+      ..strokeStyle = 'rgba(255,255,255,0.5)'
+      ..lineDashOffset = DASH_INTERVAL
+      ..stroke();
   }
 
   void _renderPixels(CanvasRenderingContext2D ctx) {
     _pixels.eachColorWithIndex((color, x, y) {
-      if (color == null || color.trim().isEmpty) return;
+      if (color == null || color.isEmpty) return;
       ctx
         ..fillStyle = color
         ..fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
@@ -281,9 +337,9 @@ class PixelCanvasElement extends PolymerElement {
 
   String getColor(int x, int y) => _pixels.get(x, y);
   String getColorByPoint(Point<int> p) => _pixels.getByPoint(p);
-  void setColor(int x, int y, String color) => _pixels.set(x, y, color);
+  void setColor(int x, int y, String color) => _pixels.set(x, y, color.trim());
   void setColorByPoint(Point<int> p, String color) =>
-      _pixels.setByPoint(p, color);
+      _pixels.setByPoint(p, color.trim());
 
   Pixel detectPixel(MouseEvent event) {
     var rect = _canvas.getBoundingClientRect();
@@ -302,7 +358,7 @@ class PixelCanvasElement extends PolymerElement {
       return null;
     }
 
-    return new Pixel(x, y, getColor(x, y), _pixels);
+    return new Pixel(x, y, getColor(x, y), this);
   }
 
   String toDataUrl([String type = 'image/png', num quality]) =>
@@ -314,25 +370,52 @@ class PixelCanvasElement extends PolymerElement {
       ..download = name
       ..dispatchEvent(new MouseEvent('click'));
   }
+
+  void select(Iterable<Point<int>> points) {
+    selectedBounds = _editor.select(points);
+  }
+  void selectByRectangle(int top, int left, int width, int height) {
+    selectedBounds = _editor.selectByRectangle(top, left, width, height);
+  }
+  void selectByColor(String color) {
+    selectedBounds = _editor.selectByColor(color);
+  }
+  void selectByColorNeibors(Point<int> p) {
+    selectedBounds = _editor.selectByColorNeighbors(p);
+  }
+  void clearSelection() {
+    selectedBounds = null;
+  }
+  bool isSelectedByPoint(Point<int> p) =>
+      (selectedBounds != null) && selectedBounds.points.contains(p);
+  void fillColor(String color) {
+    if (selectedBounds == null) return;
+    _editor.fillColor(selectedBounds, color);
+  }
 }
 
-class Pixel {
-  final int x, y;
+class Pixel extends Point<int>{
   String _color;
-  final Pixels _pixels;
+  final PixelCanvasElement _canvas;
 
-  Pixel(this.x, this.y, this._color, this._pixels) {
-  }
+  Pixel(int x, int y, this._color, this._canvas): super(x, y);
 
   String get color => _color;
   void set color(String newColor) {
     _color = newColor;
-    _pixels.set(x, y, newColor);
+    _canvas.setColor(x, y, newColor);
   }
 
-  bool equalsOnPoint(Pixel o) => o != null && x == o.x && y == o.y;
-  Point<int> toPoint() => new Point<int>(x, y);
+  bool get isSelected => _canvas.isSelectedByPoint(this);
+
+  bool equalsPoint(Pixel o) => super == o;
+  @override
   String toString() => 'Pixel($x,$y,$color)';
+  @override
+  bool operator ==(o) =>
+      o is Pixel && color == o.color && x == o.x && y == o.y;
+  @override
+  int get hashCode => (color.hashCode * 31 + super.hashCode) & 0x3fffffff;
 }
 
 class PixelCanvesEvent {

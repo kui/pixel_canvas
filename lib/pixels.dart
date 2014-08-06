@@ -117,6 +117,11 @@ class Pixels {
     if (oldColor == newColor) return;
     _colorChangeController.add(new ColorChangeEvent(x, y, oldColor, newColor));
   }
+
+  void movePixel(int x, int y, int deltaX, int deltaY, {bool copy: false}) {
+    set(x + deltaX, y + deltaY, get(x, y));
+    if (!copy) set(x, y, null);
+  }
 }
 
 class ColorChangeEvent {
