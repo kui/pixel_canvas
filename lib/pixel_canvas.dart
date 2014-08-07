@@ -222,7 +222,6 @@ class PixelCanvasElement extends PolymerElement {
   void _draw() {
     if (!drawable || _mouseOveredPx == null) return;
     _mouseOveredPx.color = drawingColor;
-    //_selecteds = null; // invalidate the selecteds cache
     clearSelection();
   }
 
@@ -242,7 +241,6 @@ class PixelCanvasElement extends PolymerElement {
     if (_rendererTimer != null) return;
 
     _rendererTimer = new Timer(RENDERER_DELAY, () {
-      _rendererTimer = null;
       renderImmediately();
     });
   }
@@ -253,6 +251,7 @@ class PixelCanvasElement extends PolymerElement {
 
     final ctx = _canvasContext;
     _render(ctx);
+    _rendererTimer = null;
 
     _afterRenderingEventController.add(
         new PixelCanvesEvent('afterrendering', this));
@@ -266,9 +265,9 @@ class PixelCanvasElement extends PolymerElement {
       _renderGridlines(ctx);
     }
     if (selectedBounds != null) {
-      _renderSelections(ctx, selectedBounds.outline);
+      _renderOutline(ctx, selectedBounds.outline);
     } else if (floatLayer != null) {
-      _renderSelections(ctx, floatLayer.outline);
+      _renderOutline(ctx, floatLayer.outline);
     }
   }
 
@@ -298,7 +297,7 @@ class PixelCanvasElement extends PolymerElement {
         ..stroke();
   }
 
-  void _renderSelections(CanvasRenderingContext2D ctx, Set<Line> lines) {
+  void _renderOutline(CanvasRenderingContext2D ctx, Set<Line> lines) {
     ctx.beginPath();
     for(Line l in lines) {
       final p = l.base;
@@ -386,12 +385,14 @@ class PixelCanvasElement extends PolymerElement {
   void clearSelection() {
     selectedBounds = null;
   }
-  bool isSelectedByPoint(Point<int> p) =>
-      (selectedBounds != null) && selectedBounds.points.contains(p);
+  bool isSelectedPoint(Point<int> p) =>
+      (selectedBounds != null) && selectedBounds.contains(p);
   void fillColor(String color) {
     if (selectedBounds == null) return;
     _editor.fillColor(selectedBounds, color);
   }
+  bool isFloatedPoint(Point<int> p) =>
+      (floatLayer != null) && floatLayer.contains(p);
 }
 
 class Pixel extends Point<int>{
@@ -406,8 +407,10 @@ class Pixel extends Point<int>{
     _canvas.setColor(x, y, newColor);
   }
 
-  bool get isSelected => _canvas.isSelectedByPoint(this);
+  bool get isSelected => _canvas.isSelectedPoint(toPoint());
+  bool get isFloated => _canvas.isSelectedPoint(toPoint());
 
+  Point<int> toPoint() => new Point(x, y);
   bool equalsPoint(Pixel o) => super == o;
   @override
   String toString() => 'Pixel($x,$y,$color)';

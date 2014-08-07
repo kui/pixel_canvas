@@ -28,6 +28,11 @@ abstract class Outlinable {
       return lines;
     }).expand((List<Line> lines) => lines).toSet();
   }
+
+  bool contains(Point<int> p) => points.contains(p);
+
+  @override
+  String toString() => points.toString();
 }
 
 abstract class Line {
