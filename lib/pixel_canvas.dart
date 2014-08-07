@@ -48,8 +48,10 @@ class PixelCanvasElement extends PolymerElement {
   @published
   FloatLayer floatLayer;
 
+  @published
+  Pixels pixels;
+
   CanvasElement _canvas;
-  Pixels _pixels;
   Editor _editor;
   Timer _rendererTimer;
   bool _isMouseDown = false;
@@ -99,7 +101,7 @@ class PixelCanvasElement extends PolymerElement {
     _canvas = shadowRoot.getElementsByTagName('canvas').first;
     _initCanvas();
 
-    _pixels = new Pixels.fromJson(text, verticalPixels, horizontalPixels);
+    pixels = new Pixels.fromJson(text, verticalPixels, horizontalPixels);
     _initPixels();
 
     render();
@@ -114,15 +116,18 @@ class PixelCanvasElement extends PolymerElement {
   horizontalPixelsChanged() => handleCanvasChange();
 
   handleCanvasChange() {
-    if (verticalPixels == _pixels.verticalPixels &&
-        horizontalPixels == _pixels.horizontalPixels)
+    if (verticalPixels == pixels.verticalPixels &&
+        horizontalPixels == pixels.horizontalPixels)
       return;
 
     delete();
     clearSelection();
 
-    _pixels = new Pixels.fromPixels(_pixels, verticalPixels, horizontalPixels);
+    pixels = new Pixels.fromPixels(pixels, verticalPixels, horizontalPixels);
     _initPixels();
+  }
+
+  pixelsChanged() {
     render();
   }
 
@@ -157,7 +162,7 @@ class PixelCanvasElement extends PolymerElement {
         _draw(newPixel);
       }
     }
-    _updateCursor();
+    _updateClassName();
   }
 
   //
@@ -182,7 +187,7 @@ class PixelCanvasElement extends PolymerElement {
 
   _handleGlobalMouseUp(MouseEvent e) {
     if (_isLeftButton(e)) _isMouseDown = false;
-    _updateCursor();
+    _updateClassName();
     if (floatLayer != null) floatLayer.grabbedPoint = null;
   }
 
@@ -205,19 +210,19 @@ class PixelCanvasElement extends PolymerElement {
         'pixelmousedown', event, _mouseOveredPx);
 
     _startDragging(event);
-    _updateCursor();
+    _updateClassName();
   }
 
-  _updateCursor() {
+  _updateClassName() {
     final px = _mouseOveredPx;
     if (px == null) {
-      this.style.cursor = 'default';
+      _canvas.className = '';
     } else if (px.isSelected) {
-      this.style.cursor = 'crosshair';
+      _canvas.className = 'selected';
     } else if (px.isFloated) {
-      this.style.cursor = _isMouseDown ? 'move' : 'pointer';
+      _canvas.className = _isMouseDown ? 'grabbing' : 'grab';
     } else {
-      this.style.cursor = 'default';
+      _canvas.className = '';
     }
   }
 
@@ -244,13 +249,13 @@ class PixelCanvasElement extends PolymerElement {
   static bool _isLeftButton(MouseEvent e) => LEFT_BUTTON == e.which;
 
   void _initPixels() {
-    _pixels.onColorChange.listen((e) {
+    pixels.onColorChange.listen((e) {
       var p = new Pixel._(e.x, e.y, e.newColor, this);
       var change = new PixelColorChangeEvent('pixelcolorchange', this, p, e.oldColor);
       _colorChangeEventsController.add(change);
       render();
     });
-    _editor = new Editor(_pixels);
+    _editor = new Editor(pixels);
   }
 
   //
@@ -342,7 +347,7 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void _renderPixels(CanvasRenderingContext2D ctx) {
-    _pixels.eachColorWithIndex((color, x, y) {
+    pixels.eachColorWithIndex((color, x, y) {
       if (color == null || color.isEmpty) return;
       ctx
         ..fillStyle = color
@@ -365,11 +370,13 @@ class PixelCanvasElement extends PolymerElement {
     ctx.clearRect(0, 0, _canvas.width, _canvas.height);
   }
 
-  String getColor(int x, int y) => _pixels.get(x, y);
-  String getColorByPoint(Point<int> p) => _pixels.getByPoint(p);
-  void setColor(int x, int y, String color) => _pixels.set(x, y, color.trim());
+  String getColor(int x, int y) => pixels.get(x, y);
+  String getColorByPoint(Point<int> p) => pixels.getByPoint(p);
+  void setColor(int x, int y, String color) {
+    pixels.set(x, y, color.trim());
+  }
   void setColorByPoint(Point<int> p, String color) =>
-      _pixels.setByPoint(p, color.trim());
+      setColor(p.x, p.y, color.trim());
 
   Pixel detectPixel(MouseEvent event) {
     var rect = _canvas.getBoundingClientRect();
@@ -458,7 +465,7 @@ class Pixel extends Point<int>{
       new Pixel(point.x, point.y, canvas);
 
   String get color => _color;
-  void set color(String newColor) {
+  set color(String newColor) {
     _color = newColor;
     _canvas.setColor(x, y, newColor);
   }
