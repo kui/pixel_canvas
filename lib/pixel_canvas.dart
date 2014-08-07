@@ -3,7 +3,7 @@ library pixel_canvas.element;
 import 'dart:html';
 import 'dart:async';
 import 'package:polymer/polymer.dart';
-import 'pixels.dart';
+import 'src/pixels.dart';
 import 'src/bounds.dart';
 import 'src/editor.dart';
 import 'src/outlinable.dart';

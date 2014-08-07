@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:unittest/unittest.dart';
-import 'package:pixel_canvas/pixels.dart';
+import 'package:pixel_canvas/src/pixels.dart';
 import 'package:pixel_canvas/src/bounds.dart';
 import 'package:pixel_canvas/src/outlinable.dart';
 

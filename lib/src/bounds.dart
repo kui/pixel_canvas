@@ -2,7 +2,7 @@ library pixel_canvas.src.bounds;
 
 import 'dart:math';
 import 'outlinable.dart';
-import '../pixels.dart';
+import 'pixels.dart';
 
 class Bounds extends Outlinable {
   final Set<Point<int>> points;

@@ -2,7 +2,7 @@ library pixel_canvas.src.editor;
 
 import 'dart:math';
 import 'dart:collection';
-import '../pixels.dart';
+import 'pixels.dart';
 import 'bounds.dart';
 import 'outlinable.dart';
 
