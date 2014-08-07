@@ -1,5 +1,5 @@
 name: pixel_canvas
-version: 0.2.0
+version: 0.2.1-dev
 description: A canvas custom element to render/edit pixels
 author: Keiichiro Ui <keiichiro.ui@gmail.com>
 homepage: https://github.com/kui/pixel_canvas
