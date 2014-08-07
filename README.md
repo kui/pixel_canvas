@@ -40,7 +40,7 @@ then it will be renderd like:
 -----------------------
 
 When the `drawable` attribute is attached, you can draw the canvas.
-See [demo](http://kui.github.io/pixel_canvas/) and [it's code](https://github.com/kui/dots_canvas/tree/master/example/index.html#L99)
+See [demo](http://kui.github.io/pixel_canvas/) and [it's code](https://github.com/kui/pixel_canvas/blob/master/example/index.html#L153)
 
 Build and push gh-pages
 ------------------------
