@@ -43,6 +43,16 @@
               canvas.selectByColorNeibors(new Point(0,0)));
           querySelector('#clear-selection').onClick.listen((e) =>
               canvas.clearSelection());
+          querySelector('#fill-color').onClick.listen((e) =>
+              canvas.fillColor());
+          querySelector('#copy').onClick.listen((e) =>
+              canvas.copy());
+          querySelector('#cut').onClick.listen((e) =>
+              canvas.cut());
+          querySelector('#paste').onClick.listen((e) =>
+              canvas.paste());
+          querySelector('#delete').onClick.listen((e) =>
+              canvas.delete());
 
           // sync attribute values
           querySelector('#pixel-size').onChange.listen((e) =>
@@ -63,7 +73,7 @@
   </head>
   <body>
 
-    <h1>Sample Usage Pixel Canvas</h1>
+    <h1>Sample Usage <code>&lt;pixel-canvas&gt;</code></h1>
 
     <p><a href="https://github.com/kui/pixel_canvas/blob/master/example/index.html">Source code</a></p>
 
@@ -113,16 +123,28 @@
     </table>
 
     <h2>Methods</h2>
+    <p>Some methods is disabled, when   selected bounds/float-layer does not exists</p>
     <p>
-      <button id="download-as-png">dowmloadAs('pixel-canas.png')</button>
       <button id="select-by-points">select([new Point(0, 0), new Point(3, 0)])</button>
       <button id="select-by-rectangle">selectByRectangle(0, 1, 3, 2)</button>
       <button id="select-by-color">selectByColor('Black')</button>
       <button id="select-by-color-neighbor">selectByColorNeighbor(new Point(0,0))</button>
-      <button id="clear-selection">clearSelection()</button>
+      <button id="download-as-png">dowmloadAs('pixel-canas.png')</button>
     </p>
 
-    <p>Click/drag the grids</p>
+    <p>
+      Bounds Operations (required to <code>select*</code>):
+      <button id="clear-selection">clearSelection()</button>
+      <button id="fill-color">fillColor()</button>
+      <button id="copy">copy()</button>
+      <button id="cut">cut()</button>
+    </p>
+
+    <p>
+      Float-layer Operations (required to <code>copy</code>/<code>cut</code>):
+      <button id="paste">paste()</button>
+      <button id="delete">delete()</button>
+    </p>
 
     <!-- -----------------------------------------
       Sample

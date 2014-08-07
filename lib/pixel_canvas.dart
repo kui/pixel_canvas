@@ -16,6 +16,7 @@ class PixelCanvasElement extends PolymerElement {
       new Duration(milliseconds: (1000/CANVAS_FPS).floor());
   static const LEFT_BUTTON = 1;
   static const DASH_INTERVAL = 6;
+  static const FLOAT_PIXEL_SIZE_FACTOR = 0.85;
 
   @published
   int verticalPixels = 32;
@@ -51,11 +52,9 @@ class PixelCanvasElement extends PolymerElement {
   Pixels _pixels;
   Editor _editor;
   Timer _rendererTimer;
-  Pixel _mouseOveredPx = null;
   bool _isMouseDown = false;
+  Pixel _mouseOveredPx;
 
-  StreamController<PixelMouseEvent> _mouseMoveEventsController =
-      new StreamController.broadcast();
   StreamController<PixelMouseEvent> _mouseOutEventsController =
       new StreamController.broadcast();
   StreamController<PixelMouseEvent> _mouseOverEventsController =
@@ -73,8 +72,6 @@ class PixelCanvasElement extends PolymerElement {
   StreamController<PixelCanvesEvent> _afterRenderingEventController =
       new StreamController.broadcast();
 
-  Stream<PixelMouseEvent> get onPixelMouseMove =>
-      _mouseMoveEventsController.stream;
   Stream<PixelMouseEvent> get onPixelMouseOut =>
       _mouseOutEventsController.stream;
   Stream<PixelMouseEvent> get onPixelMouseOver =>
@@ -120,14 +117,48 @@ class PixelCanvasElement extends PolymerElement {
     if (verticalPixels == _pixels.verticalPixels &&
         horizontalPixels == _pixels.horizontalPixels)
       return;
+
+    delete();
+    clearSelection();
+
     _pixels = new Pixels.fromPixels(_pixels, verticalPixels, horizontalPixels);
     _initPixels();
-
     render();
   }
 
-  selectedBoundsChanged() => render();
-  floatLayerChanged() => render();
+  selectedBoundsChanged() {
+    if (selectedBounds != null) delete();
+    render();
+  }
+  floatLayerChanged() {
+    if (floatLayer != null) clearSelection();
+    render();
+  }
+
+  void _mouseOveredPxChange(Pixel oldPixel, Pixel newPixel, MouseEvent event) {
+    if (newPixel != null)
+      _dispatchPixelMouseEvent(_mouseOverEventsController, 'mouseover',
+          event, newPixel);
+
+    if (oldPixel != null)
+      _dispatchPixelMouseEvent(_mouseOutEventsController, 'mouseout',
+          event, oldPixel);
+
+    if (_isMouseDown && newPixel != null) {
+      if (floatLayer != null) {
+        final _old = (oldPixel == null) ?
+            new Pixel.fromPoint(floatLayer.grabbedPoint, this) : oldPixel;
+        if (_old.isFloated) {
+          final delta = newPixel - _old;
+          floatLayer.move(delta.x, delta.y);
+          render();
+        }
+      } else {
+        _draw(newPixel);
+      }
+    }
+    _updateCursor();
+  }
 
   //
 
@@ -137,73 +168,54 @@ class PixelCanvasElement extends PolymerElement {
 
   void _initEvents() {
     _canvas
-        ..onMouseMove.listen(_handleMouseMove)
-        ..onMouseOut.listen(_handleMouseOut)
-        ..onMouseOver.listen(_handleMouseOver)
-        ..onClick.listen((MouseEvent event) =>
-            _dispatchPixelMouseEvent(_clickEventsController, 'pixelclick', event,
-                _mouseOveredPx))
+        ..onMouseMove.listen(_updateMouseOveredPx)
+        ..onMouseOut.listen(_updateMouseOveredPx)
+        ..onMouseOver.listen(_updateMouseOveredPx)
         ..onMouseDown.listen(_handleMouseDown)
-        ..onMouseUp.listen((MouseEvent event) =>
-            _dispatchPixelMouseEvent(_mouseUpEventsController, 'pixelmouseup',
-                event, _mouseOveredPx));
+        ..onClick.listen((MouseEvent event) =>
+            _dispatchPixelMouseEvent(_clickEventsController, 'pixelclick',
+                event, _mouseOveredPx))
+        ..onMouseUp.listen(_handleMouseUp);
     document
-        ..onMouseUp.listen((e) {
-          if (_isLeftButton(e)) _isMouseDown = false;
-        });
+        ..onMouseUp.listen(_handleGlobalMouseUp);
+  }
+
+  _handleGlobalMouseUp(MouseEvent e) {
+    if (_isLeftButton(e)) _isMouseDown = false;
+    _updateCursor();
+    if (floatLayer != null) floatLayer.grabbedPoint = null;
+  }
+
+  _handleMouseUp(MouseEvent event) {
+    _dispatchPixelMouseEvent(_mouseUpEventsController, 'pixelmouseup',
+        event, _mouseOveredPx);
+  }
+
+  _updateMouseOveredPx(MouseEvent mouseEvent) {
+    final newPx = detectPixel(mouseEvent);
+    final oldPx = _mouseOveredPx;
+    if (oldPx == newPx) return;
+    if (oldPx != null && oldPx.equalsPoint(newPx)) return;
+    _mouseOveredPx = newPx;
+    _mouseOveredPxChange(oldPx, newPx, mouseEvent);
   }
 
   _handleMouseDown(MouseEvent event) {
     _dispatchPixelMouseEvent(_mouseDownEventsController,
         'pixelmousedown', event, _mouseOveredPx);
 
-    _startDrawing(event);
+    _startDragging(event);
+    _updateCursor();
   }
 
-  _handleMouseOver(MouseEvent event) {
-    var px = detectPixel(event);
-    if (px != null) {
-      _dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
-          event, px);
-    }
-    _mouseOveredPx = px;
-    _updateCursor(px);
-  }
-
-  _handleMouseOut(MouseEvent event) {
-    _dispatchPixelMouseEvent(_mouseOutEventsController, 'pixelmouseout',
-        event, _mouseOveredPx);
-    _mouseOveredPx = null;
-  }
-
-  _handleMouseMove(MouseEvent event) {
-    var px = detectPixel(event);
+  _updateCursor() {
+    final px = _mouseOveredPx;
     if (px == null) {
-      _mouseOveredPx == null;
-      return;
-    }
-    _dispatchPixelMouseEvent(_mouseMoveEventsController, 'pixelmousemove',
-        event, px);
-
-    if (px.equalsPoint(_mouseOveredPx)) {
-      return;
-    }
-
-    if (_mouseOveredPx != null) {
-      _dispatchPixelMouseEvent(_mouseOutEventsController, 'pixelmouseout',
-          event, _mouseOveredPx);
-    }
-
-    _mouseOveredPx = px;
-    _dispatchPixelMouseEvent(_mouseOverEventsController, 'pixelmouseover',
-        event, px);
-    _updateCursor(px);
-    if (_isMouseDown) _draw();
-  }
-
-  void _updateCursor(Pixel px) {
-    if (px != null && px.isSelected) {
+      this.style.cursor = 'default';
+    } else if (px.isSelected) {
       this.style.cursor = 'crosshair';
+    } else if (px.isFloated) {
+      this.style.cursor = _isMouseDown ? 'move' : 'pointer';
     } else {
       this.style.cursor = 'default';
     }
@@ -212,16 +224,20 @@ class PixelCanvasElement extends PolymerElement {
   _dispatchPixelMouseEvent(StreamController c, String type, MouseEvent e, Pixel p) =>
       c.add(new PixelMouseEvent(type, this, p, e));
 
-  void _startDrawing(MouseEvent e) {
+  void _startDragging(MouseEvent e) {
     if (!_isLeftButton(e)) return;
 
     _isMouseDown = true;
-    _draw();
+    if (_mouseOveredPx.isFloated) {
+      floatLayer.grabbedPoint = _mouseOveredPx.toPoint();
+    } else {
+      _draw(_mouseOveredPx);
+    }
   }
 
-  void _draw() {
-    if (!drawable || _mouseOveredPx == null) return;
-    _mouseOveredPx.color = drawingColor;
+  void _draw(Pixel px) {
+    if (!drawable || px == null || floatLayer != null) return;
+    px.color = drawingColor;
     clearSelection();
   }
 
@@ -229,13 +245,15 @@ class PixelCanvasElement extends PolymerElement {
 
   void _initPixels() {
     _pixels.onColorChange.listen((e) {
-      var p = new Pixel(e.x, e.y, e.newColor, this);
+      var p = new Pixel._(e.x, e.y, e.newColor, this);
       var change = new PixelColorChangeEvent('pixelcolorchange', this, p, e.oldColor);
       _colorChangeEventsController.add(change);
       render();
     });
     _editor = new Editor(_pixels);
   }
+
+  //
 
   void render() {
     if (_rendererTimer != null) return;
@@ -261,6 +279,8 @@ class PixelCanvasElement extends PolymerElement {
     _clear(ctx);
 
     _renderPixels(ctx);
+    if (floatLayer != null) _renderFloatLayer(ctx);
+
     if (!noGridlines) {
       _renderGridlines(ctx);
     }
@@ -330,6 +350,17 @@ class PixelCanvasElement extends PolymerElement {
     });
   }
 
+  void _renderFloatLayer(CanvasRenderingContext2D ctx) {
+    final size = pixelSize * FLOAT_PIXEL_SIZE_FACTOR;
+    final margin = (pixelSize - size) / 2;
+    floatLayer.forEach((point, color) {
+      if (color == null || color.isEmpty) return;
+      ctx
+        ..fillStyle = color
+        ..fillRect(point.x * pixelSize + margin, point.y * pixelSize + margin, size, size);
+    });
+  }
+
   void _clear(CanvasRenderingContext2D ctx) {
     ctx.clearRect(0, 0, _canvas.width, _canvas.height);
   }
@@ -357,7 +388,7 @@ class PixelCanvasElement extends PolymerElement {
       return null;
     }
 
-    return new Pixel(x, y, getColor(x, y), this);
+    return new Pixel(x, y, this);
   }
 
   String toDataUrl([String type = 'image/png', num quality]) =>
@@ -387,9 +418,30 @@ class PixelCanvasElement extends PolymerElement {
   }
   bool isSelectedPoint(Point<int> p) =>
       (selectedBounds != null) && selectedBounds.contains(p);
-  void fillColor(String color) {
+  void fillColor() {
     if (selectedBounds == null) return;
-    _editor.fillColor(selectedBounds, color);
+    _editor.fillColor(selectedBounds, drawingColor);
+  }
+  void copy() {
+    if (selectedBounds == null) return;
+    print('copy');
+    floatLayer = _editor.copy(selectedBounds);
+    selectedBounds = null;
+  }
+  void cut() {
+    if (selectedBounds == null) return;
+    print('cut');
+    floatLayer = _editor.cut(selectedBounds);
+    selectedBounds = null;
+  }
+  void paste() {
+    if (floatLayer == null) return;
+    _editor.paste(floatLayer);
+    floatLayer = null;
+  }
+  void delete() {
+    if (floatLayer == null) return;
+    floatLayer = null;
   }
   bool isFloatedPoint(Point<int> p) =>
       (floatLayer != null) && floatLayer.contains(p);
@@ -399,7 +451,11 @@ class Pixel extends Point<int>{
   String _color;
   final PixelCanvasElement _canvas;
 
-  Pixel(int x, int y, this._color, this._canvas): super(x, y);
+  Pixel._(int x, int y, this._color, this._canvas): super(x, y);
+  factory Pixel(int x, int y, PixelCanvasElement canvas) =>
+      new Pixel._(x, y, canvas.getColor(x, y), canvas);
+  factory Pixel.fromPoint(Point<int> point, PixelCanvasElement canvas) =>
+      new Pixel(point.x, point.y, canvas);
 
   String get color => _color;
   void set color(String newColor) {
@@ -408,7 +464,7 @@ class Pixel extends Point<int>{
   }
 
   bool get isSelected => _canvas.isSelectedPoint(toPoint());
-  bool get isFloated => _canvas.isSelectedPoint(toPoint());
+  bool get isFloated => _canvas.isFloatedPoint(toPoint());
 
   Point<int> toPoint() => new Point(x, y);
   bool equalsPoint(Pixel o) => super == o;

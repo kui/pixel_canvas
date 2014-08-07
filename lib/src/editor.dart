@@ -34,6 +34,10 @@ class Editor {
 }
 
 class FloatLayer extends Outlinable {
+  Point<int> _grabbedPoint;
+  Point<int> get grabbedPoint => _grabbedPoint;
+  set grabbedPoint(Point<int> p) => _grabbedPoint = contains(p) ? p : null;
+
   Map<Point<int>, String> _colorMap;
   @override
   Set<Point<int>> get points => _colorMap.keys.toSet();
@@ -48,11 +52,13 @@ class FloatLayer extends Outlinable {
   }
 
   void move(int deltaX, int deltaY) {
+    final delta = new Point(deltaX, deltaY);
     final Map<Point<int>, String> m = new HashMap();
     forEach((p, color) {
-      m[new Point(p.x + deltaX, p.y + deltaY)] = color;
+      m[p + delta] = color;
     });
     _colorMap = m;
+    if (_grabbedPoint != null) _grabbedPoint = _grabbedPoint + delta;
   }
 
   void forEach(void f(Point<int> point, String color)) => _colorMap.forEach(f);
