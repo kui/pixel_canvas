@@ -241,7 +241,7 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void _draw(Pixel px) {
-    if (!drawable || px == null || floatLayer != null) return;
+    if (px == null || floatLayer != null) return;
     px.color = drawingColor;
     clearSelection();
   }
@@ -373,10 +373,11 @@ class PixelCanvasElement extends PolymerElement {
   String getColor(int x, int y) => pixels.get(x, y);
   String getColorByPoint(Point<int> p) => pixels.getByPoint(p);
   void setColor(int x, int y, String color) {
+    if (!drawable) return;
     pixels.set(x, y, color.trim());
   }
   void setColorByPoint(Point<int> p, String color) =>
-      setColor(p.x, p.y, color.trim());
+      setColor(p.x, p.y, color);
 
   Pixel detectPixel(MouseEvent event) {
     var rect = _canvas.getBoundingClientRect();
@@ -409,45 +410,50 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void select(Iterable<Point<int>> points) {
+    if (!drawable) return;
     selectedBounds = _editor.select(points);
   }
   void selectByRectangle(int top, int left, int width, int height) {
+    if (!drawable) return;
     selectedBounds = _editor.selectByRectangle(top, left, width, height);
   }
   void selectByColor(String color) {
+    if (!drawable) return;
     selectedBounds = _editor.selectByColor(color);
   }
   void selectByColorNeibors(Point<int> p) {
+    if (!drawable) return;
     selectedBounds = _editor.selectByColorNeighbors(p);
   }
   void clearSelection() {
+    if (!drawable) return;
     selectedBounds = null;
   }
   bool isSelectedPoint(Point<int> p) =>
       (selectedBounds != null) && selectedBounds.contains(p);
   void fillColor() {
-    if (selectedBounds == null) return;
+    if (!drawable || selectedBounds == null) return;
     _editor.fillColor(selectedBounds, drawingColor);
   }
   void copy() {
-    if (selectedBounds == null) return;
+    if (!drawable || selectedBounds == null) return;
     print('copy');
     floatLayer = _editor.copy(selectedBounds);
     selectedBounds = null;
   }
   void cut() {
-    if (selectedBounds == null) return;
+    if (!drawable || selectedBounds == null) return;
     print('cut');
     floatLayer = _editor.cut(selectedBounds);
     selectedBounds = null;
   }
   void paste() {
-    if (floatLayer == null) return;
+    if (!drawable || floatLayer == null) return;
     _editor.paste(floatLayer);
     floatLayer = null;
   }
   void delete() {
-    if (floatLayer == null) return;
+    if (!drawable || floatLayer == null) return;
     floatLayer = null;
   }
   bool isFloatedPoint(Point<int> p) =>
