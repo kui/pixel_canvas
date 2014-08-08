@@ -17,38 +17,46 @@ class PixelCanvasElement extends PolymerElement {
   static const LEFT_BUTTON = 1;
   static const DASH_INTERVAL = 6;
   static const FLOAT_PIXEL_SIZE_FACTOR = 0.85;
+  static const DEFAULT_PIXELS = 32;
+  static const DEFAULT_PIXEL_SIZE = 24;
 
   @published
-  int verticalPixels = 32;
+  int get verticalPixels => readValue(#verticalPixels, () => DEFAULT_PIXELS);
+  set verticalPixels(int p) => writeValue(#verticalPixels, p);
 
   @published
-  int horizontalPixels = 32;
+  int get horizontalPixels => readValue(#horizontalPixels, () => DEFAULT_PIXELS);
+  set horizontalPixels(int p) => writeValue(#horizontalPixels, p);
 
   @published
-  int pixelSize = 20;
+  int get pixelSize => readValue(#pixelSize, () => DEFAULT_PIXEL_SIZE);
+  set pixelSize(int s) => writeValue(#pixelSize, s);
 
   @published
-  bool noGridlines = false;
+  bool get noGridlines => readValue(#noGridlines, () => false);
+  set noGridlines(bool b) => writeValue(#noGridlines, b);
 
   @published
-  String gridlineColor = 'rgba(0, 0, 0, 0.2)';
+  String get gridlineColor => readValue(#gridlineColor, () => 'rgba(0, 0, 0, 0.2)');
+  set gridlineColor(String c) => writeValue(#gridlineColor, c);
 
   @published
-  int gridlineWidth = 1;
+  int get gridlineWidth => readValue(#gridlineWidth, () => 1);
+  set gridlineWidth(int w) => writeValue(#gridlineWidth, w);
 
   @published
-  bool drawable = false;
+  bool get drawable => readValue(#drawable, () => false);
+  set drawable(bool b) => writeValue(#drawable, b);
 
   @published
-  String drawingColor = 'black';
+  String get drawingColor => readValue(#drawingColor, () => 'Black');
+  set drawingColor(String c) => writeValue(#drawingColor, c);
 
-  @published
+  @observable
   Bounds selectedBounds;
-
-  @published
+  @observable
   FloatLayer floatLayer;
-
-  @published
+  @observable
   Pixels pixels;
 
   CanvasElement _canvas;
