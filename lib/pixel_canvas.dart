@@ -5,8 +5,10 @@ import 'dart:async';
 import 'package:polymer/polymer.dart';
 import 'src/pixels.dart';
 import 'src/bounds.dart';
-import 'src/editor.dart';
+import 'src/float_layer.dart';
 import 'src/outlinable.dart';
+
+part 'action.dart';
 
 @CustomTag('pixel-canvas')
 class PixelCanvasElement extends PolymerElement {
@@ -15,55 +17,63 @@ class PixelCanvasElement extends PolymerElement {
   static final RENDERER_DELAY =
       new Duration(milliseconds: (1000/CANVAS_FPS).floor());
   static const LEFT_BUTTON = 1;
-  static const DASH_INTERVAL = 6;
-  static const FLOAT_PIXEL_SIZE_FACTOR = 0.85;
   static const DEFAULT_PIXELS = 32;
   static const DEFAULT_PIXEL_SIZE = 24;
 
-  @published
+  @PublishedProperty(reflect: true)
   int get verticalPixels => readValue(#verticalPixels, () => DEFAULT_PIXELS);
   set verticalPixels(int p) => writeValue(#verticalPixels, p);
 
-  @published
+  @PublishedProperty(reflect: true)
   int get horizontalPixels => readValue(#horizontalPixels, () => DEFAULT_PIXELS);
   set horizontalPixels(int p) => writeValue(#horizontalPixels, p);
 
-  @published
+  @PublishedProperty(reflect: true)
   int get pixelSize => readValue(#pixelSize, () => DEFAULT_PIXEL_SIZE);
   set pixelSize(int s) => writeValue(#pixelSize, s);
 
-  @published
+  @PublishedProperty(reflect: true)
   bool get noGridlines => readValue(#noGridlines, () => false);
   set noGridlines(bool b) => writeValue(#noGridlines, b);
 
-  @published
+  @PublishedProperty(reflect: true)
   String get gridlineColor => readValue(#gridlineColor, () => 'rgba(0, 0, 0, 0.2)');
   set gridlineColor(String c) => writeValue(#gridlineColor, c);
 
-  @published
+  @PublishedProperty(reflect: true)
   int get gridlineWidth => readValue(#gridlineWidth, () => 1);
   set gridlineWidth(int w) => writeValue(#gridlineWidth, w);
 
-  @published
+  @PublishedProperty(reflect: true)
   bool get drawable => readValue(#drawable, () => false);
   set drawable(bool b) => writeValue(#drawable, b);
 
-  @published
+  @PublishedProperty(reflect: true)
   String get drawingColor => readValue(#drawingColor, () => 'Black');
   set drawingColor(String c) => writeValue(#drawingColor, c);
 
   @observable
-  Bounds selectedBounds;
-  @observable
-  FloatLayer floatLayer;
-  @observable
   Pixels pixels;
 
   CanvasElement _canvas;
-  Editor _editor;
   Timer _rendererTimer;
-  bool _isMouseDown = false;
-  Pixel _mouseOveredPx;
+
+  Pixel mouseOveredPixel;
+
+  @published
+  Action get currentAction {
+    if (_currentAction == null) {
+      _currentAction = new DrawingAction(this);
+    }
+    return _currentAction;
+  }
+  set currentAction(Action a) {
+    final oldValue = _currentAction;
+    final newValue = a;
+    _currentAction = a;
+    notifyPropertyChange(#currentAction, oldValue, newValue);
+  }
+  Action _currentAction;
 
   StreamController<PixelMouseEvent> _mouseOutEventsController =
       new StreamController.broadcast();
@@ -128,25 +138,14 @@ class PixelCanvasElement extends PolymerElement {
         horizontalPixels == pixels.horizontalPixels)
       return;
 
-    delete();
-    clearSelection();
+    currentAction = null;
 
     pixels = new Pixels.fromPixels(pixels, verticalPixels, horizontalPixels);
     _initPixels();
   }
 
-  pixelsChanged() {
-    render();
-  }
-
-  selectedBoundsChanged() {
-    if (selectedBounds != null) delete();
-    render();
-  }
-  floatLayerChanged() {
-    if (floatLayer != null) clearSelection();
-    render();
-  }
+  pixelsChanged() => render();
+  currentActionChanged() => render();
 
   void _mouseOveredPxChange(Pixel oldPixel, Pixel newPixel, MouseEvent event) {
     if (newPixel != null)
@@ -157,20 +156,7 @@ class PixelCanvasElement extends PolymerElement {
       _dispatchPixelMouseEvent(_mouseOutEventsController, 'mouseout',
           event, oldPixel);
 
-    if (_isMouseDown && newPixel != null) {
-      if (floatLayer != null) {
-        final _old = (oldPixel == null) ?
-            new Pixel.fromPoint(floatLayer.grabbedPoint, this) : oldPixel;
-        if (_old.isFloated) {
-          final delta = newPixel - _old;
-          floatLayer.move(delta.x, delta.y);
-          render();
-        }
-      } else {
-        _draw(newPixel);
-      }
-    }
-    _updateClassName();
+    currentAction.handleMouseOver(newPixel);
   }
 
   //
@@ -187,72 +173,43 @@ class PixelCanvasElement extends PolymerElement {
         ..onMouseDown.listen(_handleMouseDown)
         ..onClick.listen((MouseEvent event) =>
             _dispatchPixelMouseEvent(_clickEventsController, 'pixelclick',
-                event, _mouseOveredPx))
+                event, mouseOveredPixel))
         ..onMouseUp.listen(_handleMouseUp);
     document
         ..onMouseUp.listen(_handleGlobalMouseUp);
   }
 
   _handleGlobalMouseUp(MouseEvent e) {
-    if (_isLeftButton(e)) _isMouseDown = false;
-    _updateClassName();
-    if (floatLayer != null) floatLayer.grabbedPoint = null;
+    if (_isLeftButton(e)) {
+      currentAction.handleMouseUp(mouseOveredPixel);
+    }
   }
 
   _handleMouseUp(MouseEvent event) {
     _dispatchPixelMouseEvent(_mouseUpEventsController, 'pixelmouseup',
-        event, _mouseOveredPx);
+        event, mouseOveredPixel);
   }
 
   _updateMouseOveredPx(MouseEvent mouseEvent) {
     final newPx = detectPixel(mouseEvent);
-    final oldPx = _mouseOveredPx;
+    final oldPx = mouseOveredPixel;
     if (oldPx == newPx) return;
     if (oldPx != null && oldPx.equalsPoint(newPx)) return;
-    _mouseOveredPx = newPx;
+    mouseOveredPixel = newPx;
     _mouseOveredPxChange(oldPx, newPx, mouseEvent);
   }
 
   _handleMouseDown(MouseEvent event) {
     _dispatchPixelMouseEvent(_mouseDownEventsController,
-        'pixelmousedown', event, _mouseOveredPx);
+        'pixelmousedown', event, mouseOveredPixel);
 
-    _startDragging(event);
-    _updateClassName();
-  }
-
-  _updateClassName() {
-    final px = _mouseOveredPx;
-    if (px == null) {
-      _canvas.className = '';
-    } else if (px.isSelected) {
-      _canvas.className = 'selected';
-    } else if (px.isFloated) {
-      _canvas.className = _isMouseDown ? 'grabbing' : 'grab';
-    } else {
-      _canvas.className = '';
+    if (_isLeftButton(event)) {
+      currentAction.handleMouseDown(mouseOveredPixel);
     }
   }
 
   _dispatchPixelMouseEvent(StreamController c, String type, MouseEvent e, Pixel p) =>
       c.add(new PixelMouseEvent(type, this, p, e));
-
-  void _startDragging(MouseEvent e) {
-    if (!_isLeftButton(e)) return;
-
-    _isMouseDown = true;
-    if (_mouseOveredPx.isFloated) {
-      floatLayer.grabbedPoint = _mouseOveredPx.toPoint();
-    } else {
-      _draw(_mouseOveredPx);
-    }
-  }
-
-  void _draw(Pixel px) {
-    if (px == null || floatLayer != null) return;
-    px.color = drawingColor;
-    clearSelection();
-  }
 
   static bool _isLeftButton(MouseEvent e) => LEFT_BUTTON == e.which;
 
@@ -263,7 +220,6 @@ class PixelCanvasElement extends PolymerElement {
       _colorChangeEventsController.add(change);
       render();
     });
-    _editor = new Editor(pixels);
   }
 
   //
@@ -292,16 +248,14 @@ class PixelCanvasElement extends PolymerElement {
     _clear(ctx);
 
     _renderPixels(ctx);
-    if (floatLayer != null) _renderFloatLayer(ctx);
+
+    currentAction.renderBeforeGrids(ctx);
 
     if (!noGridlines) {
       _renderGridlines(ctx);
     }
-    if (selectedBounds != null) {
-      _renderOutline(ctx, selectedBounds.outline);
-    } else if (floatLayer != null) {
-      _renderOutline(ctx, floatLayer.outline);
-    }
+
+    currentAction.renderAfterGrids(ctx);
   }
 
   void _renderGridlines(CanvasRenderingContext2D ctx) {
@@ -330,47 +284,12 @@ class PixelCanvasElement extends PolymerElement {
         ..stroke();
   }
 
-  void _renderOutline(CanvasRenderingContext2D ctx, Set<Line> lines) {
-    ctx.beginPath();
-    for(Line l in lines) {
-      final p = l.base;
-      final x = p.x * pixelSize;
-      final y = p.y * pixelSize;
-      ctx.moveTo(x, y);
-      if (l is HorizontalLine) {
-        ctx.lineTo(x + pixelSize, y);
-      } else { // l is VerticalLine
-        ctx.lineTo(x, y + pixelSize);
-      }
-    }
-    ctx
-      ..lineWidth = gridlineWidth + 1
-      ..strokeStyle = 'rgba(0,0,0,0.5)'
-      ..setLineDash([DASH_INTERVAL])
-      ..lineDashOffset = 0
-      ..stroke()
-      ..strokeStyle = 'rgba(255,255,255,0.5)'
-      ..lineDashOffset = DASH_INTERVAL
-      ..stroke();
-  }
-
   void _renderPixels(CanvasRenderingContext2D ctx) {
     pixels.eachColorWithIndex((color, x, y) {
       if (color == null || color.isEmpty) return;
       ctx
         ..fillStyle = color
         ..fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-    });
-  }
-
-  void _renderFloatLayer(CanvasRenderingContext2D ctx) {
-    final size = pixelSize * FLOAT_PIXEL_SIZE_FACTOR;
-    final margin = (pixelSize - size) / 2;
-    floatLayer.forEach((point, color) {
-      if (color == null || color.isEmpty) return;
-      ctx
-        ..fillStyle = color
-        ..fillRect(point.x * pixelSize + margin, point.y * pixelSize + margin, size, size);
     });
   }
 
@@ -407,6 +326,10 @@ class PixelCanvasElement extends PolymerElement {
     return new Pixel(x, y, this);
   }
 
+  void setCanvasClass(String classes) {
+    _canvas.className = classes;
+  }
+
   String toDataUrl([String type = 'image/png', num quality]) =>
     _canvas.toDataUrl(type, quality);
 
@@ -419,53 +342,67 @@ class PixelCanvasElement extends PolymerElement {
 
   void select(Iterable<Point<int>> points) {
     if (!drawable) return;
-    selectedBounds = _editor.select(points);
+    final bounds = new Bounds(pixels, points);
+    currentAction = new SelectedAction(this, bounds);
   }
-  void selectByRectangle(int top, int left, int width, int height) {
+  void selectByRectangle(int left, int top, int width, int height) {
     if (!drawable) return;
-    selectedBounds = _editor.selectByRectangle(top, left, width, height);
+    final bounds = new Bounds.fromRectangle(pixels, new Rectangle(left, top, width, height));
+    currentAction = new SelectedAction(this, bounds);
   }
   void selectByColor(String color) {
     if (!drawable) return;
-    selectedBounds = _editor.selectByColor(color);
+    final bounds = new Bounds.sameColor(pixels, color.toLowerCase());
+    currentAction = new SelectedAction(this, bounds);
   }
-  void selectByColorNeibors(Point<int> p) {
+  void selectByColorNeibors(Point<int> point) {
     if (!drawable) return;
-    selectedBounds = _editor.selectByColorNeighbors(p);
+    final bounds = new Bounds.sameColorNeighbors(pixels, point);
+    currentAction = new SelectedAction(this, bounds);
   }
   void clearSelection() {
-    if (!drawable) return;
-    selectedBounds = null;
+    if (currentAction is! SelectedAction) return;
+    currentAction = null;
   }
-  bool isSelectedPoint(Point<int> p) =>
-      (selectedBounds != null) && selectedBounds.contains(p);
+
   void fillColor() {
-    if (!drawable || selectedBounds == null) return;
-    _editor.fillColor(selectedBounds, drawingColor);
+    if (!drawable) return;
+    if (currentAction is! SelectedAction) return;
+    final points = (currentAction as SelectedAction).bounds.points;
+    _fillColor(points, drawingColor);
+    clearSelection();
   }
   void copy() {
-    if (!drawable || selectedBounds == null) return;
-    print('copy');
-    floatLayer = _editor.copy(selectedBounds);
-    selectedBounds = null;
+    if (!drawable) return;
+    if (currentAction is! SelectedAction) return;
+    final points = (currentAction as SelectedAction).bounds.points;
+    currentAction = new FloatLayerAction(this, points);
   }
   void cut() {
-    if (!drawable || selectedBounds == null) return;
-    print('cut');
-    floatLayer = _editor.cut(selectedBounds);
-    selectedBounds = null;
+    if (!drawable) return;
+    if (currentAction is! SelectedAction) return;
+    final points = (currentAction as SelectedAction).bounds.points;
+    currentAction = new FloatLayerAction(this, points);
+    _fillColor(points, null);
   }
+  void _fillColor(Iterable<Point<int>> points, String color) {
+    points.forEach((p) {
+      setColor(p.x, p.y, color);
+    });
+  }
+
   void paste() {
-    if (!drawable || floatLayer == null) return;
-    _editor.paste(floatLayer);
-    floatLayer = null;
+    if (!drawable) return;
+    if (currentAction is! FloatLayerAction) return;
+    final floatLayer = (currentAction as FloatLayerAction).floatLayer;
+    floatLayer.forEach(setColorByPoint);
+    currentAction = null;
   }
   void delete() {
-    if (!drawable || floatLayer == null) return;
-    floatLayer = null;
+    if (!drawable) return;
+    if (currentAction is! FloatLayerAction) return;
+    currentAction = null;
   }
-  bool isFloatedPoint(Point<int> p) =>
-      (floatLayer != null) && floatLayer.contains(p);
 }
 
 class Pixel extends Point<int>{
@@ -483,9 +420,6 @@ class Pixel extends Point<int>{
     _color = newColor;
     _canvas.setColor(x, y, newColor);
   }
-
-  bool get isSelected => _canvas.isSelectedPoint(toPoint());
-  bool get isFloated => _canvas.isFloatedPoint(toPoint());
 
   Point<int> toPoint() => new Point(x, y);
   bool equalsPoint(Pixel o) => super == o;

@@ -1,4 +1,4 @@
-library pixel_canvas.pixels;
+library pixel_canvas.src.pixels;
 
 import 'dart:math';
 import 'dart:async';
