@@ -426,11 +426,12 @@ class PixelCanvasElement extends PolymerElement {
   }
 }
 
-class Pixel extends Point<int>{
+class Pixel {
   String _color;
   final PixelCanvasElement _canvas;
+  final Point<int> point;
 
-  Pixel._(int x, int y, this._color, this._canvas): super(x, y);
+  Pixel._(int x, int y, this._color, this._canvas): this.point = new Point(x, y);
   factory Pixel(int x, int y, PixelCanvasElement canvas) =>
       new Pixel._(x, y, canvas.getColor(x, y), canvas);
   factory Pixel.fromPoint(Point<int> point, PixelCanvasElement canvas) =>
@@ -439,18 +440,17 @@ class Pixel extends Point<int>{
   String get color => _color;
   set color(String newColor) {
     _color = newColor;
-    _canvas.setColor(x, y, newColor);
+    _canvas.setColor(point.x, point.y, newColor);
   }
 
-  Point<int> toPoint() => new Point(x, y);
   bool equalsPoint(Pixel o) => super == o;
   @override
-  String toString() => 'Pixel($x,$y,$color)';
+  String toString() => 'Pixel(${point.x},${point.y},$color)';
   @override
   bool operator ==(o) =>
-      o is Pixel && color == o.color && x == o.x && y == o.y;
+      o is Pixel && o.point == point;
   @override
-  int get hashCode => (color.hashCode * 31 + super.hashCode) & 0x3fffffff;
+  int get hashCode => (color.hashCode * 31 + point.hashCode) & 0x3fffffff;
 }
 
 class PixelCanvesEvent {

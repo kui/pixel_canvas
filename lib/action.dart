@@ -110,7 +110,7 @@ class PointsSelectionAction extends SelectionAction {
   _updateCurrentAction(Pixel pixel) {
     if (!isMouseDown || pixel == null) return;
 
-    final p = pixel.toPoint();
+    final p = pixel.point;
     if (bounds.contains(p)) return;
 
     canvas.currentAction = new PointsSelectionAction.addPoint(this, p);
@@ -119,7 +119,7 @@ class PointsSelectionAction extends SelectionAction {
   _updateCursor(Pixel pixel) {
     if (pixel == null) return;
 
-    final p = pixel.toPoint();
+    final p = pixel.point;
     if (bounds.contains(p)) {
       canvas.setCanvasClass('selected');
     }
@@ -155,7 +155,7 @@ class RectangleSelectionAction extends SelectionAction {
   _updateCurrentAction(Pixel pixel, Point<int> _grabbedPoint) {
     if (!isMouseDown || pixel == null) return;
 
-    final p = pixel.toPoint();
+    final p = pixel.point;
     final rect = (_grabbedPoint == null) ?
         new Rectangle(p.x, p.y, 0, 0) :
         new Rectangle.fromPoints(p, _grabbedPoint);
@@ -167,7 +167,7 @@ class RectangleSelectionAction extends SelectionAction {
 
   void _updateCursor(Pixel pixel) {
     if (pixel == null) return;
-    final p = pixel.toPoint();
+    final p = pixel.point;
     if (isMouseDown) {
       canvas.setCanvasClass('grabbing');
     } else if (bounds.contains(p)) {
@@ -200,7 +200,7 @@ abstract class OneShotClickSelectionAction extends SelectionAction {
 
   void _updateCursor(Pixel pixel) {
     if (pixel == null) return;
-    final p = pixel.toPoint();
+    final p = pixel.point;
     if (bounds.contains(p)) {
       canvas.setCanvasClass('selected');
     }
@@ -242,7 +242,7 @@ class SameColorNeighborsSelectionAction extends OneShotClickSelectionAction {
 
   @override
   OneShotClickSelectionAction createFromPixel(Pixel pixel) =>
-      new SameColorNeighborsSelectionAction(canvas, pixel.toPoint());
+      new SameColorNeighborsSelectionAction(canvas, pixel.point);
 }
 
 class ImmutableSelectionAction extends SelectionAction {
@@ -253,7 +253,7 @@ class ImmutableSelectionAction extends SelectionAction {
   handleMouseOver(Pixel pixel) {
     super.handleMouseOver(pixel);
 
-    if (pixel != null && bounds.contains(pixel.toPoint())) {
+    if (pixel != null && bounds.contains(pixel.point)) {
       canvas.setCanvasClass('selected');
     }
   }
@@ -274,7 +274,7 @@ class FloatLayerAction extends OutlinableAction {
   handleMouseDown(Pixel pixel) {
     super.handleMouseDown(pixel);
 
-    final p = pixel.toPoint();
+    final p = pixel.point;
     if (floatLayer.contains(p)) {
       floatLayer.grabbedPoint = p;
     }
@@ -293,7 +293,7 @@ class FloatLayerAction extends OutlinableAction {
     super.handleMouseOver(pixel);
 
     if (isMouseDown && floatLayer.grabbedPoint != null && pixel != null) {
-      final delta = pixel - floatLayer.grabbedPoint;
+      final delta = pixel.point - floatLayer.grabbedPoint;
       floatLayer.move(delta.x, delta.y);
       canvas.render();
     }
@@ -303,7 +303,7 @@ class FloatLayerAction extends OutlinableAction {
 
   void _updateCursor(Pixel pixel) {
     if (pixel == null) return;
-    final p = pixel.toPoint();
+    final p = pixel.point;
     if (floatLayer.contains(p)) {
       canvas.setCanvasClass(isMouseDown ? 'grabbing' : 'grab');
     }
