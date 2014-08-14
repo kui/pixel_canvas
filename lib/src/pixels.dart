@@ -34,7 +34,7 @@ class Pixels {
       String colorGenerator(int x, int y)) {
     var px = new Pixels(verticalPixels, horizontalPixels);
     px.eachColorWithIndex(
-        (c, x, y) => px._set(x, y, colorGenerator(x, y)));
+        (c, x, y) => px._set(x, y, normalizeColor(colorGenerator(x, y))));
     return px;
   }
 
@@ -100,6 +100,7 @@ class Pixels {
   void setByPoint(Point<int> p, String color) => set(p.x, p.y, color);
 
   void set(int x, int y, String color) {
+    final normedColor = normalizeColor(color);
     String old = get(x, y);
     _set(x, y, color);
     notifyColorChange(x, y, old, color);
@@ -122,6 +123,12 @@ class Pixels {
     set(x + deltaX, y + deltaY, get(x, y));
     if (!copy) set(x, y, null);
   }
+}
+
+String normalizeColor(String color) {
+  if (color == null) return null;
+  String c = color.trim().toLowerCase();
+  return c.isEmpty ? null : c;
 }
 
 class ColorChangeEvent {

@@ -301,7 +301,7 @@ class PixelCanvasElement extends PolymerElement {
   String getColorByPoint(Point<int> p) => pixels.getByPoint(p);
   void setColor(int x, int y, String color) {
     if (!drawable) return;
-    pixels.set(x, y, color == null ? null : color.trim().toLowerCase());
+    pixels.set(x, y, color);
   }
   void setColorByPoint(Point<int> p, String color) =>
       setColor(p.x, p.y, color);
@@ -340,48 +340,69 @@ class PixelCanvasElement extends PolymerElement {
       ..dispatchEvent(new MouseEvent('click'));
   }
 
+  // selection
+
+  void startSelection() {
+    if (!drawable) return;
+    final bounds = new Bounds(pixels, []);
+    currentAction = new PointsSelectionAction(this, bounds);
+  }
+  void startRectSelection() {
+    if (!drawable) return;
+    final bounds = new Bounds(pixels, []);
+    currentAction = new RectangleSelectionAction(this, bounds, null);
+  }
+  void startSameColorsSelection() {
+    if (!drawable) return;
+    currentAction = new SameColorsSelectionAction.empty(this);
+  }
+  void startSameColorNeiborsSelection() {
+    if (!drawable) return;
+    currentAction = new SameColorNeighborsSelectionAction.empty(this);
+  }
+
   void select(Iterable<Point<int>> points) {
     if (!drawable) return;
     final bounds = new Bounds(pixels, points);
-    currentAction = new SelectedAction(this, bounds);
+    currentAction = new ImmutableSelectionAction(this, bounds);
   }
   void selectByRectangle(int left, int top, int width, int height) {
     if (!drawable) return;
     final bounds = new Bounds.fromRectangle(pixels, new Rectangle(left, top, width, height));
-    currentAction = new SelectedAction(this, bounds);
+    currentAction = new ImmutableSelectionAction(this, bounds);
   }
   void selectByColor(String color) {
     if (!drawable) return;
     final bounds = new Bounds.sameColor(pixels, color.toLowerCase());
-    currentAction = new SelectedAction(this, bounds);
+    currentAction = new ImmutableSelectionAction(this, bounds);
   }
   void selectByColorNeibors(Point<int> point) {
     if (!drawable) return;
     final bounds = new Bounds.sameColorNeighbors(pixels, point);
-    currentAction = new SelectedAction(this, bounds);
+    currentAction = new ImmutableSelectionAction(this, bounds);
   }
   void clearSelection() {
-    if (currentAction is! SelectedAction) return;
+    if (currentAction is! SelectionAction) return;
     currentAction = null;
   }
 
   void fillColor() {
     if (!drawable) return;
-    if (currentAction is! SelectedAction) return;
-    final points = (currentAction as SelectedAction).bounds.points;
+    if (currentAction is! SelectionAction) return;
+    final points = (currentAction as SelectionAction).bounds.points;
     _fillColor(points, drawingColor);
     clearSelection();
   }
   void copy() {
     if (!drawable) return;
-    if (currentAction is! SelectedAction) return;
-    final points = (currentAction as SelectedAction).bounds.points;
+    if (currentAction is! SelectionAction) return;
+    final points = (currentAction as SelectionAction).bounds.points;
     currentAction = new FloatLayerAction(this, points);
   }
   void cut() {
     if (!drawable) return;
-    if (currentAction is! SelectedAction) return;
-    final points = (currentAction as SelectedAction).bounds.points;
+    if (currentAction is! SelectionAction) return;
+    final points = (currentAction as SelectionAction).bounds.points;
     currentAction = new FloatLayerAction(this, points);
     _fillColor(points, null);
   }

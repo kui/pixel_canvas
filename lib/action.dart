@@ -36,12 +36,6 @@ class DrawingAction extends Action {
   }
 }
 
-abstract class SelectionAction extends Action {
-  final PixelCanvasElement _canvas;
-
-  SelectionAction(this._canvas);
-}
-
 abstract class OutlinableAction extends Action {
   static const DASH_INTERVAL = 6;
 
@@ -67,22 +61,193 @@ abstract class OutlinableAction extends Action {
     }
     ctx
       ..lineWidth = gridlineWidth + 1
-      ..strokeStyle = 'rgba(0,0,0,0.5)'
       ..setLineDash([DASH_INTERVAL])
+
+      ..strokeStyle = 'rgba(0,0,0,0.5)'
       ..lineDashOffset = 0
       ..stroke()
+
       ..strokeStyle = 'rgba(255,255,255,0.5)'
       ..lineDashOffset = DASH_INTERVAL
       ..stroke();
   }
 }
 
-class SelectedAction extends OutlinableAction {
+abstract class SelectionAction extends OutlinableAction {
   final PixelCanvasElement canvas;
   final Bounds bounds;
   get outline => bounds.outline;
 
-  SelectedAction(this.canvas, this.bounds);
+  SelectionAction(this.canvas, this.bounds);
+}
+
+class PointsSelectionAction extends SelectionAction {
+  PointsSelectionAction(PixelCanvasElement canvas, Bounds bounds) :
+    super(canvas, bounds);
+
+  factory PointsSelectionAction.addPoint(PointsSelectionAction action, Point<int> p) {
+    final newPoints = new Set()
+        ..addAll(action.bounds.points)
+        ..add(p);
+    return new PointsSelectionAction(
+        action.canvas, new Bounds(action.canvas.pixels, newPoints))
+      ..isMouseDown = action.isMouseDown;
+  }
+
+  @override
+  handleMouseDown(Pixel pixel) {
+    super.handleMouseDown(pixel);
+    _updateCurrentAction(pixel);
+  }
+
+  @override
+  handleMouseOver(Pixel pixel) {
+    super.handleMouseOver(pixel);
+    _updateCurrentAction(pixel);
+    _updateCursor(pixel);
+  }
+
+  _updateCurrentAction(Pixel pixel) {
+    if (!isMouseDown || pixel == null) return;
+
+    final p = pixel.toPoint();
+    if (bounds.contains(p)) return;
+
+    canvas.currentAction = new PointsSelectionAction.addPoint(this, p);
+  }
+
+  _updateCursor(Pixel pixel) {
+    if (pixel == null) return;
+
+    final p = pixel.toPoint();
+    if (bounds.contains(p)) {
+      canvas.setCanvasClass('selected');
+    }
+  }
+}
+
+class RectangleSelectionAction extends SelectionAction {
+  final Point<int> grabbedPoint;
+
+  RectangleSelectionAction(PixelCanvasElement canvas, Bounds bounds, this.grabbedPoint) :
+    super(canvas, bounds);
+
+  @override
+  handleMouseDown(Pixel pixel) {
+    super.handleMouseDown(pixel);
+    _updateCurrentAction(pixel, null);
+    _updateCursor(pixel);
+  }
+
+  @override
+  handleMouseOver(Pixel pixel) {
+    super.handleMouseOver(pixel);
+    _updateCurrentAction(pixel, grabbedPoint);
+    _updateCursor(pixel);
+  }
+
+  @override
+  handleMouseUp(Pixel pixel) {
+    super.handleMouseUp(pixel);
+    _updateCursor(pixel);
+  }
+
+  _updateCurrentAction(Pixel pixel, Point<int> _grabbedPoint) {
+    if (!isMouseDown || pixel == null) return;
+
+    final p = pixel.toPoint();
+    final rect = (_grabbedPoint == null) ?
+        new Rectangle(p.x, p.y, 0, 0) :
+        new Rectangle.fromPoints(p, _grabbedPoint);
+    final gp = (_grabbedPoint == null) ? p : _grabbedPoint;
+    final bounds = new Bounds.fromRectangle(canvas.pixels, rect);
+    canvas.currentAction = new RectangleSelectionAction(canvas, bounds, gp)
+      ..isMouseDown = isMouseDown;
+  }
+
+  void _updateCursor(Pixel pixel) {
+    if (pixel == null) return;
+    final p = pixel.toPoint();
+    if (isMouseDown) {
+      canvas.setCanvasClass('grabbing');
+    } else if (bounds.contains(p)) {
+      canvas.setCanvasClass('selected');
+    } else {
+      canvas.setCanvasClass('grab');
+    }
+  }
+}
+
+abstract class OneShotClickSelectionAction extends SelectionAction {
+  OneShotClickSelectionAction(PixelCanvasElement canvas, Bounds bounds) : super(canvas, bounds) {
+    canvas.setCanvasClass('selected');
+  }
+
+  OneShotClickSelectionAction createFromPixel(Pixel pixel);
+
+  @override
+  handleMouseDown(Pixel pixel) {
+    super.handleMouseDown(pixel);
+    canvas.currentAction = createFromPixel(pixel)
+      ..isMouseDown = isMouseDown;
+  }
+
+  @override
+  handleMouseOver(Pixel pixel) {
+    super.handleMouseOver(pixel);
+    _updateCursor(pixel);
+  }
+
+  void _updateCursor(Pixel pixel) {
+    if (pixel == null) return;
+    final p = pixel.toPoint();
+    if (bounds.contains(p)) {
+      canvas.setCanvasClass('selected');
+    }
+  }
+}
+
+class SameColorsSelectionAction extends OneShotClickSelectionAction {
+  SameColorsSelectionAction._(PixelCanvasElement canvas, Bounds bounds):
+    super(canvas, bounds);
+
+  factory SameColorsSelectionAction(PixelCanvasElement canvas, String color) {
+    final b = new Bounds.sameColor(canvas.pixels, color);
+    return new SameColorsSelectionAction._(canvas, b);
+  }
+
+  factory SameColorsSelectionAction.empty(PixelCanvasElement canvas) {
+    final b = new Bounds(canvas.pixels, []);
+    return new SameColorsSelectionAction._(canvas, b);
+  }
+
+  @override
+  OneShotClickSelectionAction createFromPixel(Pixel pixel) =>
+      new SameColorsSelectionAction(canvas, pixel.color);
+}
+
+class SameColorNeighborsSelectionAction extends OneShotClickSelectionAction {
+  SameColorNeighborsSelectionAction._(PixelCanvasElement canvas, Bounds bounds) :
+    super(canvas, bounds);
+
+  factory SameColorNeighborsSelectionAction(PixelCanvasElement canvas, Point<int> point) {
+    final b = new Bounds.sameColorNeighbors(canvas.pixels, point);
+    return new SameColorNeighborsSelectionAction._(canvas, b);
+  }
+
+  factory SameColorNeighborsSelectionAction.empty(PixelCanvasElement canvas) {
+    final b = new Bounds(canvas.pixels, []);
+    return new SameColorNeighborsSelectionAction._(canvas, b);
+  }
+
+  @override
+  OneShotClickSelectionAction createFromPixel(Pixel pixel) =>
+      new SameColorNeighborsSelectionAction(canvas, pixel.toPoint());
+}
+
+class ImmutableSelectionAction extends SelectionAction {
+  ImmutableSelectionAction(PixelCanvasElement canvas, Bounds bounds):
+    super(canvas, bounds);
 
   @override
   handleMouseOver(Pixel pixel) {
@@ -150,10 +315,26 @@ class FloatLayerAction extends OutlinableAction {
     final size = pixelSize * FLOAT_PIXEL_SIZE_FACTOR;
     final margin = (pixelSize - size) / 2;
     floatLayer.forEach((point, color) {
-      if (color == null || color.isEmpty) return;
       ctx
-        ..fillStyle = color
-        ..fillRect(point.x * pixelSize + margin, point.y * pixelSize + margin, size, size);
+        ..setLineDash([])
+        ..lineWidth = 1
+
+        ..beginPath()
+        ..strokeStyle = 'rgba(0,0,0,0.5)'
+        ..rect(point.x * pixelSize + margin, point.y * pixelSize + margin, size, size)
+        ..stroke();
+
+      if (color != null && color.isNotEmpty) {
+        ctx
+          ..fillStyle = color
+          ..fill();
+      }
+
+      ctx
+        ..beginPath()
+        ..strokeStyle = 'rgba(255,255,255,0.5)'
+        ..rect(point.x * pixelSize + margin + 1, point.y * pixelSize + margin + 1, size - 2, size - 2)
+        ..stroke();
     });
   }
 }
