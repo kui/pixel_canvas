@@ -14,7 +14,7 @@
   <body><style>
       pixel-canvas {
         display: inline-block;
-        background-image: url("bg.png");
+        background-image: url(bg.png);
       }
     </style><script src="packages/web_components/platform.js"></script><script src="packages/web_components/dart_support.js"></script>
 
@@ -178,7 +178,7 @@ html /deep/ [layout][start] {
   align-items: flex-start;
 }
 
-html /deep/ [layout][center] {
+html /deep/ [layout][center], html /deep/ [layout][center-center] {
   -ms-flex-align: center;
   -webkit-align-items: center;
   align-items: center;
@@ -198,7 +198,7 @@ html /deep/ [layout][start-justified] {
   justify-content: flex-start;
 }
 
-html /deep/ [layout][center-justified] {
+html /deep/ [layout][center-justified], html /deep/ [layout][center-center] {
   -ms-flex-pack: center;
   -webkit-justify-content: center;
   justify-content: center;
@@ -387,15 +387,27 @@ html /deep/ [segment], html /deep/ segment {
     <h2>Methods</h2>
     <p>Some methods is disabled, when   selected bounds/float-layer does not exists</p>
     <p>
-      <button id="select-by-points">select([new Point(0, 0), new Point(3, 0)])</button>
-      <button id="select-by-rectangle">selectByRectangle(0, 1, 3, 2)</button>
-      <button id="select-by-color">selectByColor('Black')</button>
-      <button id="select-by-color-neighbor">selectByColorNeighbor(new Point(0,0))</button>
       <button id="download-as-png">dowmloadAs('pixel-canas.png')</button>
     </p>
 
     <p>
-      Bounds Operations (required to <code>select*</code>):
+      Oneshot Selection Operations:
+      <button id="select-by-points">select([new Point(0, 0), new Point(3, 0)])</button>
+      <button id="select-by-rectangle">selectByRectangle(0, 1, 3, 2)</button>
+      <button id="select-by-color">selectByColor('Black')</button>
+      <button id="select-by-color-neighbor">selectByColorNeighbor(new Point(0,0))</button>
+    </p>
+
+    <p>
+      Interactive Selection Operations:
+      <button id="start-selection">startSelection()</button>
+      <button id="start-rect-selection">startRectSelection()</button>
+      <button id="start-same-colors-selection">startSameColorsSelection()</button>
+      <button id="start-same-color-neighbors-selection">startSameColorNeiborsSelection()</button>
+    </p>
+
+    <p>
+      Selection Bounds Operations (required to <code>select*</code> or <code>start*Selection</code>):
       <button id="clear-selection">clearSelection()</button>
       <button id="fill-color">fillColor()</button>
       <button id="copy">copy()</button>
