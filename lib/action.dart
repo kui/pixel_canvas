@@ -261,6 +261,8 @@ class ImmutableSelectionAction extends SelectionAction {
 
 class FloatLayerAction extends OutlinableAction {
   static const FLOAT_PIXEL_SIZE_FACTOR = 0.85;
+  static const CELL_OUTLINE_COLORS = const ['rgba(0,0,0,0.8)',
+                                            'rgba(255,255,255,0.8)'];
 
   final PixelCanvasElement canvas;
   final FloatLayer floatLayer;
@@ -315,14 +317,14 @@ class FloatLayerAction extends OutlinableAction {
     final size = pixelSize * FLOAT_PIXEL_SIZE_FACTOR;
     final margin = (pixelSize - size) / 2;
     final marginVector = new Point(margin, margin);
-    floatLayer.forEach((point, color) {
+    floatLayer.forEach((Point<num> point, color) {
       final offset = (point * pixelSize) + marginVector;
       ctx
           ..setLineDash([])
           ..lineWidth = 1
 
           ..beginPath()
-          ..strokeStyle = 'rgba(0,0,0,0.5)'
+          ..strokeStyle = CELL_OUTLINE_COLORS[0]
           ..rect(offset.x, offset.y, size, size)
           ..stroke();
 
@@ -334,7 +336,7 @@ class FloatLayerAction extends OutlinableAction {
         ctx
             // draw a white cross
             ..beginPath()
-            ..strokeStyle = 'rgba(255,255,255,0.5)'
+            ..strokeStyle = CELL_OUTLINE_COLORS[1]
             ..moveTo(offset.x, offset.y)
             ..lineTo(offset.x + size, offset.y + size)
             ..moveTo(offset.x + size, offset.y)
@@ -343,7 +345,7 @@ class FloatLayerAction extends OutlinableAction {
 
             // draw a black cross
             ..beginPath()
-            ..strokeStyle = 'rgba(0,0,0,0.5)'
+            ..strokeStyle = CELL_OUTLINE_COLORS[0]
             ..moveTo(offset.x, offset.y + 1)
             ..lineTo(offset.x + size - 1, offset.y + size)
             ..moveTo(offset.x + size, offset.y + 1)
@@ -354,7 +356,7 @@ class FloatLayerAction extends OutlinableAction {
 
       ctx
           ..beginPath()
-          ..strokeStyle = 'rgba(255,255,255,0.5)'
+          ..strokeStyle = CELL_OUTLINE_COLORS[1]
           ..rect(offset.x + 1, offset.y + 1, size - 2, size - 2)
           ..stroke();
     });
