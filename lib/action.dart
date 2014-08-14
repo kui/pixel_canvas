@@ -314,27 +314,49 @@ class FloatLayerAction extends OutlinableAction {
     final pixelSize = canvas.pixelSize;
     final size = pixelSize * FLOAT_PIXEL_SIZE_FACTOR;
     final margin = (pixelSize - size) / 2;
+    final marginVector = new Point(margin, margin);
     floatLayer.forEach((point, color) {
+      final offset = (point * pixelSize) + marginVector;
       ctx
-        ..setLineDash([])
-        ..lineWidth = 1
+          ..setLineDash([])
+          ..lineWidth = 1
 
-        ..beginPath()
-        ..strokeStyle = 'rgba(0,0,0,0.5)'
-        ..rect(point.x * pixelSize + margin, point.y * pixelSize + margin, size, size)
-        ..stroke();
+          ..beginPath()
+          ..strokeStyle = 'rgba(0,0,0,0.5)'
+          ..rect(offset.x, offset.y, size, size)
+          ..stroke();
 
       if (color != null && color.isNotEmpty) {
         ctx
           ..fillStyle = color
           ..fill();
+      } else {
+        ctx
+            // draw a white cross
+            ..beginPath()
+            ..strokeStyle = 'rgba(255,255,255,0.5)'
+            ..moveTo(offset.x, offset.y)
+            ..lineTo(offset.x + size, offset.y + size)
+            ..moveTo(offset.x + size, offset.y)
+            ..lineTo(offset.x, offset.y + size)
+            ..stroke()
+
+            // draw a black cross
+            ..beginPath()
+            ..strokeStyle = 'rgba(0,0,0,0.5)'
+            ..moveTo(offset.x, offset.y + 1)
+            ..lineTo(offset.x + size - 1, offset.y + size)
+            ..moveTo(offset.x + size, offset.y + 1)
+            ..lineTo(offset.x + 1, offset.y + size)
+            ..stroke()
+            ;
       }
 
       ctx
-        ..beginPath()
-        ..strokeStyle = 'rgba(255,255,255,0.5)'
-        ..rect(point.x * pixelSize + margin + 1, point.y * pixelSize + margin + 1, size - 2, size - 2)
-        ..stroke();
+          ..beginPath()
+          ..strokeStyle = 'rgba(255,255,255,0.5)'
+          ..rect(offset.x + 1, offset.y + 1, size - 2, size - 2)
+          ..stroke();
     });
   }
 }

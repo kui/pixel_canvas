@@ -416,7 +416,11 @@ class PixelCanvasElement extends PolymerElement {
     if (!drawable) return;
     if (currentAction is! FloatLayerAction) return;
     final floatLayer = (currentAction as FloatLayerAction).floatLayer;
-    floatLayer.forEach(setColorByPoint);
+    final rect = pixels.rectangle;
+    floatLayer.forEach((point, color) {
+      if (!rect.containsPoint(point)) return;
+      setColorByPoint(point, color);
+    });
     currentAction = null;
   }
   void delete() {
