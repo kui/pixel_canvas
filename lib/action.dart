@@ -39,6 +39,9 @@ class DrawingAction extends Action {
 }
 
 abstract class OutlinableAction extends Action {
+  static const LIGHTER_LINE_COLOR = 'rgba(0,0,0,0.5)';
+  static const DARKER_LINE_COLOR = 'rgba(255,255,255,0.5)';
+
   static const DASH_INTERVAL = 6;
 
   Set<Line> get outline;
@@ -54,22 +57,25 @@ abstract class OutlinableAction extends Action {
       final p = l.base;
       final x = p.x * pixelSize;
       final y = p.y * pixelSize;
-      ctx.moveTo(x, y);
       if (l is HorizontalLine) {
-        ctx.lineTo(x + pixelSize, y);
+        ctx
+            ..moveTo(x, y + l.slip)
+            ..lineTo(x + pixelSize, y + l.slip);
       } else { // l is VerticalLine
-        ctx.lineTo(x, y + pixelSize);
+        ctx
+            ..moveTo(x + l.slip, y)
+            ..lineTo(x + l.slip, y + pixelSize);
       }
     }
     ctx
       ..lineWidth = gridlineWidth + 1
       ..setLineDash([DASH_INTERVAL])
 
-      ..strokeStyle = 'rgba(0,0,0,0.5)'
+      ..strokeStyle = DARKER_LINE_COLOR
       ..lineDashOffset = 0
       ..stroke()
 
-      ..strokeStyle = 'rgba(255,255,255,0.5)'
+      ..strokeStyle = LIGHTER_LINE_COLOR
       ..lineDashOffset = DASH_INTERVAL
       ..stroke();
   }
@@ -310,8 +316,6 @@ class ImmutableSelectionAction extends SelectionAction {
 
 class FloatLayerAction extends OutlinableAction {
   static const FLOAT_PIXEL_SIZE_FACTOR = 0.85;
-  static const CELL_OUTLINE_COLORS = const ['rgba(0,0,0,0.8)',
-                                            'rgba(255,255,255,0.8)'];
 
   final PixelCanvasElement canvas;
   final FloatLayer floatLayer;
@@ -373,7 +377,7 @@ class FloatLayerAction extends OutlinableAction {
           ..lineWidth = 1
 
           ..beginPath()
-          ..strokeStyle = CELL_OUTLINE_COLORS[0]
+          ..strokeStyle = OutlinableAction.LIGHTER_LINE_COLOR
           ..rect(offset.x, offset.y, size, size)
           ..stroke();
 
@@ -385,7 +389,7 @@ class FloatLayerAction extends OutlinableAction {
         ctx
             // draw a white cross
             ..beginPath()
-            ..strokeStyle = CELL_OUTLINE_COLORS[1]
+            ..strokeStyle = OutlinableAction.DARKER_LINE_COLOR
             ..moveTo(offset.x, offset.y)
             ..lineTo(offset.x + size, offset.y + size)
             ..moveTo(offset.x + size, offset.y)
@@ -394,7 +398,7 @@ class FloatLayerAction extends OutlinableAction {
 
             // draw a black cross
             ..beginPath()
-            ..strokeStyle = CELL_OUTLINE_COLORS[0]
+            ..strokeStyle = OutlinableAction.LIGHTER_LINE_COLOR
             ..moveTo(offset.x, offset.y + 1)
             ..lineTo(offset.x + size - 1, offset.y + size)
             ..moveTo(offset.x + size, offset.y + 1)
@@ -405,7 +409,7 @@ class FloatLayerAction extends OutlinableAction {
 
       ctx
           ..beginPath()
-          ..strokeStyle = CELL_OUTLINE_COLORS[1]
+          ..strokeStyle = OutlinableAction.DARKER_LINE_COLOR
           ..rect(offset.x + 1, offset.y + 1, size - 2, size - 2)
           ..stroke();
     });
