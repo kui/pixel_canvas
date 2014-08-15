@@ -143,7 +143,7 @@ class InstantSelectionAction extends PointsSelectionAction {
 
   bool isReady(KeyboardEvent event) =>
       targetKeyCode == event.which
-      && canvas.currentAction is! InstantSelectionAction;
+      && canvas.currentAction is DrawingAction;
 
   @override
   handleKeyDown(KeyboardEvent event) {
