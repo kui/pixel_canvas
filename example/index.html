@@ -43,16 +43,18 @@
               canvas.selectByColorNeibors(new Point(0,0)));
           querySelector('#clear-selection').onClick.listen((e) =>
               canvas.clearSelection());
+          querySelector('#delete-selection').onClick.listen((e) =>
+              canvas.deleteSelection());
           querySelector('#fill-color').onClick.listen((e) =>
-              canvas.fillColor());
+              canvas.fillSelection());
           querySelector('#copy').onClick.listen((e) =>
-              canvas.copy());
+              canvas.copySelection());
           querySelector('#cut').onClick.listen((e) =>
-              canvas.cut());
+              canvas.cutSelection());
           querySelector('#paste').onClick.listen((e) =>
-              canvas.paste());
-          querySelector('#delete').onClick.listen((e) =>
-              canvas.delete());
+              canvas.pasteFloatLayer());
+          querySelector('#delete-floatlayer').onClick.listen((e) =>
+              canvas.deleteFloatLayer());
           querySelector('#start-selection').onClick.listen((e) =>
               canvas.startSelection());
           querySelector('#start-rect-selection').onClick.listen((e) =>
@@ -157,15 +159,16 @@
     <p>
       Selection Bounds Operations (required to <code>select*</code> or <code>start*Selection</code>):
       <button id="clear-selection">clearSelection()</button>
-      <button id="fill-color">fillColor()</button>
-      <button id="copy">copy()</button>
-      <button id="cut">cut()</button>
+      <button id="delete-selection">deleteSelection()</button>
+      <button id="fill-color">fillSelection()</button>
+      <button id="copy">copySelection()</button>
+      <button id="cut">cutSelection()</button>
     </p>
 
     <p>
       Float-layer Operations (required to <code>copy</code>/<code>cut</code>):
-      <button id="paste">paste()</button>
-      <button id="delete">delete()</button>
+      <button id="paste">pasteFloatLayer()</button>
+      <button id="delete-floatlayer">deleteFloatLayer()</button>
     </p>
 
     <!-- -----------------------------------------

@@ -404,38 +404,44 @@ class PixelCanvasElement extends PolymerElement {
     final bounds = new Bounds.sameColorNeighbors(pixels, point);
     currentAction = new ImmutableSelectionAction(this, bounds);
   }
+
+  void fillSelection() {
+    if (!drawable) return;
+    if (currentAction is! SelectionAction) return;
+    final points = (currentAction as SelectionAction).bounds.points;
+    _fill(points, drawingColor);
+    clearSelection();
+  }
+  void copySelection() {
+    if (!drawable) return;
+    if (currentAction is! SelectionAction) return;
+    final points = (currentAction as SelectionAction).bounds.points;
+    currentAction = new FloatLayerAction(this, points);
+  }
+  void cutSelection() {
+    if (!drawable) return;
+    if (currentAction is! SelectionAction) return;
+    final points = (currentAction as SelectionAction).bounds.points;
+    currentAction = new FloatLayerAction(this, points);
+    _fill(points, null);
+  }
   void clearSelection() {
     if (currentAction is! SelectionAction) return;
     currentAction = null;
   }
-
-  void fillColor() {
-    if (!drawable) return;
+  void deleteSelection() {
     if (currentAction is! SelectionAction) return;
     final points = (currentAction as SelectionAction).bounds.points;
-    _fillColor(points, drawingColor);
-    clearSelection();
+    currentAction = null;
+    _fill(points, null);
   }
-  void copy() {
-    if (!drawable) return;
-    if (currentAction is! SelectionAction) return;
-    final points = (currentAction as SelectionAction).bounds.points;
-    currentAction = new FloatLayerAction(this, points);
-  }
-  void cut() {
-    if (!drawable) return;
-    if (currentAction is! SelectionAction) return;
-    final points = (currentAction as SelectionAction).bounds.points;
-    currentAction = new FloatLayerAction(this, points);
-    _fillColor(points, null);
-  }
-  void _fillColor(Iterable<Point<int>> points, String color) {
+  void _fill(Iterable<Point<int>> points, String color) {
     points.forEach((p) {
       setColor(p.x, p.y, color);
     });
   }
 
-  void paste() {
+  void pasteFloatLayer() {
     if (!drawable) return;
     if (currentAction is! FloatLayerAction) return;
     final floatLayer = (currentAction as FloatLayerAction).floatLayer;
@@ -446,10 +452,11 @@ class PixelCanvasElement extends PolymerElement {
     });
     currentAction = null;
   }
-  void delete() {
+  void deleteFloatLayer() {
     if (!drawable) return;
-    if (currentAction is! FloatLayerAction) return;
-    currentAction = null;
+    print(currentAction is FloatLayerAction);
+    if (currentAction is FloatLayerAction)
+      currentAction = null;
   }
 }
 
