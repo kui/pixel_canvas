@@ -13,6 +13,8 @@ abstract class Action {
   handleMouseOver(Pixel pixel) {
     canvas.setCanvasClass('');
   }
+  handleKeyDown(KeyboardEvent event) {}
+  handleKeyUp(KeyboardEvent event) {}
   renderBeforeGrids(CanvasRenderingContext2D ctx) {}
   renderAfterGrids(CanvasRenderingContext2D ctx) {}
 }
@@ -85,15 +87,6 @@ class PointsSelectionAction extends SelectionAction {
   PointsSelectionAction(PixelCanvasElement canvas, Bounds bounds) :
     super(canvas, bounds);
 
-  factory PointsSelectionAction.addPoint(PointsSelectionAction action, Point<int> p) {
-    final newPoints = new Set()
-        ..addAll(action.bounds.points)
-        ..add(p);
-    return new PointsSelectionAction(
-        action.canvas, new Bounds(action.canvas.pixels, newPoints))
-      ..isMouseDown = action.isMouseDown;
-  }
-
   @override
   handleMouseDown(Pixel pixel) {
     super.handleMouseDown(pixel);
@@ -113,7 +106,16 @@ class PointsSelectionAction extends SelectionAction {
     final p = pixel.point;
     if (bounds.contains(p)) return;
 
-    canvas.currentAction = new PointsSelectionAction.addPoint(this, p);
+    canvas.currentAction = _addPoint(p);
+  }
+
+  PointsSelectionAction _addPoint(Point<int> p) {
+    final newPoints = new Set()
+        ..addAll(bounds.points)
+        ..add(p);
+    return new PointsSelectionAction(
+        canvas, new Bounds(canvas.pixels, newPoints))
+      ..isMouseDown = isMouseDown;
   }
 
   _updateCursor(Pixel pixel) {
@@ -123,6 +125,53 @@ class PointsSelectionAction extends SelectionAction {
     if (bounds.contains(p)) {
       canvas.setCanvasClass('selected');
     }
+  }
+}
+
+class InstantSelectionAction extends PointsSelectionAction {
+  bool isTargetKeyDown = false;
+  final int targetKeyCode;
+
+  InstantSelectionAction(PixelCanvasElement canvas, Bounds bounds, this.targetKeyCode) :
+    super(canvas, bounds);
+
+  bool isReady(KeyboardEvent event) =>
+      targetKeyCode == event.which
+      && canvas.currentAction is! InstantSelectionAction;
+
+  @override
+  handleKeyDown(KeyboardEvent event) {
+    if (event.which == targetKeyCode)
+      isTargetKeyDown = true;
+  }
+
+  @override
+  handleKeyUp(KeyboardEvent event) {
+    if (event.which == targetKeyCode)
+      isTargetKeyDown = false;
+  }
+
+  @override
+  _updateCurrentAction(Pixel pixel) {
+    if (isTargetKeyDown) {
+      super._updateCurrentAction(pixel);
+    } else if (isMouseDown) {
+      final drawing = new DrawingAction(canvas)
+          ..isMouseDown = true;
+      canvas.currentAction = drawing;
+      drawing.handleMouseOver(pixel);
+    }
+  }
+
+  @override
+  InstantSelectionAction _addPoint(Point<int> p) {
+    final newPoints = new Set()
+        ..addAll(bounds.points)
+        ..add(p);
+    return new InstantSelectionAction(
+        canvas, new Bounds(canvas.pixels, newPoints), targetKeyCode)
+      ..isMouseDown = isMouseDown
+      ..isTargetKeyDown = isTargetKeyDown;
   }
 }
 

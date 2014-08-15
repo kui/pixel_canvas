@@ -19,6 +19,7 @@ class PixelCanvasElement extends PolymerElement {
   static const LEFT_BUTTON = 1;
   static const DEFAULT_PIXELS = 32;
   static const DEFAULT_PIXEL_SIZE = 24;
+  static const CTRL_CODE = 17;
 
   @PublishedProperty(reflect: true)
   int get verticalPixels => readValue(#verticalPixels, () => DEFAULT_PIXELS);
@@ -74,6 +75,7 @@ class PixelCanvasElement extends PolymerElement {
     notifyPropertyChange(#currentAction, oldValue, newValue);
   }
   Action _currentAction;
+  InstantSelectionAction _instantAction;
 
   StreamController<PixelMouseEvent> _mouseOutEventsController =
       new StreamController.broadcast();
@@ -128,7 +130,8 @@ class PixelCanvasElement extends PolymerElement {
   // property changed callbacks
 
   noGridlinesChanged() => render();
-  pixelSizeChanged()   => render();
+  gridlineColorChanged() => render();
+  pixelSizeChanged() => render();
 
   verticalPixelsChanged()   => handleCanvasChange();
   horizontalPixelsChanged() => handleCanvasChange();
@@ -176,7 +179,9 @@ class PixelCanvasElement extends PolymerElement {
                 event, mouseOveredPixel))
         ..onMouseUp.listen(_handleMouseUp);
     document
-        ..onMouseUp.listen(_handleGlobalMouseUp);
+        ..onMouseUp.listen(_handleGlobalMouseUp)
+        ..onKeyDown.listen(_handleKeyDown)
+        ..onKeyUp.listen(_handleKeyUp);
   }
 
   _handleGlobalMouseUp(MouseEvent e) {
@@ -208,8 +213,26 @@ class PixelCanvasElement extends PolymerElement {
     }
   }
 
+  void _handleKeyDown(KeyboardEvent event) {
+    if (_instantAction == null)
+      _createInstantAction();
+    if (_instantAction.isReady(event)) {
+      _instantAction.isMouseDown = currentAction.isMouseDown;
+      currentAction = _instantAction;
+    }
+    currentAction.handleKeyDown(event);
+  }
+  void _handleKeyUp(KeyboardEvent event) {
+    currentAction.handleKeyUp(event);
+  }
+
   _dispatchPixelMouseEvent(StreamController c, String type, MouseEvent e, Pixel p) =>
       c.add(new PixelMouseEvent(type, this, p, e));
+
+  _createInstantAction() {
+    final bounds = new Bounds(pixels, []);
+    _instantAction = new InstantSelectionAction(this, bounds, CTRL_CODE);
+  }
 
   static bool _isLeftButton(MouseEvent e) => LEFT_BUTTON == e.which;
 
