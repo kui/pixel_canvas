@@ -93,6 +93,8 @@ class PixelCanvasElement extends PolymerElement {
       new StreamController.broadcast();
   StreamController<PixelCanvesEvent> _afterRenderingEventController =
       new StreamController.broadcast();
+  StreamController<ActionChangeEvent> _actionChangeEventController =
+      new StreamController.broadcast();
 
   Stream<PixelMouseEvent> get onPixelMouseOut =>
       _mouseOutEventsController.stream;
@@ -110,6 +112,8 @@ class PixelCanvasElement extends PolymerElement {
       _beforeRenderingEventController.stream;
   Stream<PixelCanvesEvent> get onAfterRendering =>
       _afterRenderingEventController.stream;
+  Stream<ActionChangeEvent> get onActionChange =>
+      _actionChangeEventController.stream;
 
   CanvasRenderingContext2D get _canvasContext =>
       (_canvas == null) ? null : _canvas.getContext('2d');
@@ -148,7 +152,14 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   pixelsChanged() => render();
-  currentActionChanged() => render();
+  currentActionChanged(Action old) {
+    render();
+    _dispachActionChange(old, currentAction);
+  }
+
+  void _dispachActionChange(Action oldAction, Action newAction) =>
+    _actionChangeEventController.add(
+      new ActionChangeEvent(oldAction, newAction));
 
   void _mouseOveredPxChange(Pixel oldPixel, Pixel newPixel, MouseEvent event) {
     if (newPixel != null)
@@ -505,4 +516,9 @@ class PixelColorChangeEvent extends PixelEvent {
   final String oldColor;
   PixelColorChangeEvent(String type, PixelCanvasElement c, Pixel p,
       this.oldColor): super(type, c, p);
+}
+class ActionChangeEvent {
+  final oldAction;
+  final newAction;
+  ActionChangeEvent(this.oldAction, this.newAction);
 }
