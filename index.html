@@ -15,6 +15,7 @@
       pixel-canvas {
         display: inline-block;
         background-image: url(bg.png);
+        margin: 10px;
       }
     </style><script src="packages/web_components/platform.js"></script><script src="packages/web_components/dart_support.js"></script>
 
@@ -385,41 +386,56 @@ html /deep/ [segment], html /deep/ segment {
     </tbody></table>
 
     <h2>Methods</h2>
-    <p>Some methods is disabled, when   selected bounds/float-layer does not exists</p>
-    <p>
-      <button id="download-as-png">dowmloadAs('pixel-canas.png')</button>
-    </p>
 
-    <p>
-      Oneshot Selection Operations:
-      <button id="select-by-points">select([new Point(0, 0), new Point(3, 0)])</button>
-      <button id="select-by-rectangle">selectByRectangle(0, 1, 3, 2)</button>
-      <button id="select-by-color">selectByColor('Black')</button>
-      <button id="select-by-color-neighbor">selectByColorNeighbor(new Point(0,0))</button>
-    </p>
-
-    <p>
-      Interactive Selection Operations:
-      <button id="start-selection">startSelection()</button>
-      <button id="start-rect-selection">startRectSelection()</button>
-      <button id="start-same-colors-selection">startSameColorsSelection()</button>
-      <button id="start-same-color-neighbors-selection">startSameColorNeiborsSelection()</button>
-      or <code>Ctrl + Left-Click</code>
-    </p>
-
-    <p>
-      Selection Bounds Operations (required to <code>select*</code> or <code>start*Selection</code>):
-      <button id="clear-selection">clearSelection()</button>
-      <button id="fill-color">fillColor()</button>
-      <button id="copy">copy()</button>
-      <button id="cut">cut()</button>
-    </p>
-
-    <p>
-      Float-layer Operations (required to <code>copy</code>/<code>cut</code>):
-      <button id="paste">paste()</button>
-      <button id="delete">delete()</button>
-    </p>
+    <table border="1">
+      <tbody><tr>
+        <th>Oneshot Selection Operations</th>
+        <td>
+          <button id="select-by-points">select([new Point(0, 0), new Point(3, 0)])</button>
+          <button id="select-by-rectangle">selectByRectangle(0, 1, 3, 2)</button>
+          <button id="select-by-color">selectByColor('Black')</button>
+          <button id="select-by-color-neighbor">selectByColorNeighbor(new Point(0,0))</button>
+        </td>
+      </tr>
+      <tr>
+        <th>Interactive Selection Operations</th>
+        <td>
+          <button id="start-selection">startSelection()</button>
+          <button id="start-rect-selection">startRectSelection()</button>
+          <button id="start-same-colors-selection">startSameColorsSelection()</button>
+          <button id="start-same-color-neighbors-selection">startSameColorNeiborsSelection()</button>
+          or <code>Ctrl + Left-Click</code>
+        </td>
+      </tr>
+      <tr>
+        <th>
+          Selection Bounds Operations <br>
+          <small>(required to
+          <code>select*</code>/<code>start*Selection</code>)</small>
+        </th>
+        <td>
+          <button id="clear-selection">clearSelection()</button>
+          <button id="delete-selection">deleteSelection()</button>
+          <button id="fill-color">fillSelection()</button>
+          <button id="copy">copySelection()</button>
+          <button id="cut">cutSelection()</button>
+        </td>
+      </tr>
+      <tr>
+        <th>
+          Float-layer Operations<br>
+          <small>(required to <code>copySelection</code>/<code>cutSelection</code>)</small>
+        </th>
+        <td>
+          <button id="paste">pasteFloatLayer()</button>
+          <button id="delete-floatlayer">deleteFloatLayer()</button>
+        </td>
+      </tr>
+      <tr>
+        <th>Others</th>
+        <td><button id="download-as-png">dowmloadAs('pixel-canas.png')</button></td>
+      </tr>
+    </tbody></table>
 
     <!-- -----------------------------------------
       Sample
