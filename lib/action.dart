@@ -368,8 +368,8 @@ class FloatLayerAction extends OutlinableAction {
   renderBeforeGrids(CanvasRenderingContext2D ctx) {
     final pixelSize = canvas.pixelSize;
     final size = pixelSize * FLOAT_PIXEL_SIZE_FACTOR;
-    final margin = (pixelSize - size) / 2;
-    final marginVector = new Point(margin, margin);
+    final margin = ((pixelSize - size) / 2).round();
+    final marginVector = new Point<int>(margin, margin);
     floatLayer.forEach((Point<num> point, color) {
       final offset = (point * pixelSize) + marginVector;
       ctx

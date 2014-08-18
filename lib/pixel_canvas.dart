@@ -465,7 +465,6 @@ class PixelCanvasElement extends PolymerElement {
   }
   void deleteFloatLayer() {
     if (!drawable) return;
-    print(currentAction is FloatLayerAction);
     if (currentAction is FloatLayerAction)
       currentAction = null;
   }
