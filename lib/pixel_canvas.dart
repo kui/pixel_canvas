@@ -486,6 +486,8 @@ class Pixel {
     _color = newColor;
     _canvas.setColor(point.x, point.y, newColor);
   }
+  int get x => point.x;
+  int get y => point.y;
 
   bool equalsPoint(Pixel o) => super == o;
   @override
