@@ -49,7 +49,7 @@ class Pixels {
       var row = colors[y];
       if (row == null) {
         return null;
-      } else if(x >= row.length){
+      } else if (x >= row.length){
         return null;
       } else {
         return row[x];
@@ -97,24 +97,21 @@ class Pixels {
     var maxRowLength = verticalPixels;
     for(int i = 0; i < maxColLength; i++) {
       for(int j = 0; j < maxRowLength; j++) {
-        f(get(i, j), i, j);
+        f(getAsString(i, j), i, j);
       }
     }
   }
 
-  void setByPoint(Point<int> p, String colorString) =>
-      set(p.x, p.y, colorString);
-  void set(int x, int y, String colorString, [meta]) =>
-      setColor(x, y, new Color(colorString, meta));
-  void setColor(int x, int y, Color color) {
-    String old = get(x, y);
+  String getAsString(int x, int y) => get(x, y).color;
+  Color get(int x, int y) => _colors[y][x];
+
+  void setByString(int x, int y, String colorString, [meta]) =>
+      set(x, y, new Color(colorString, meta));
+  void set(int x, int y, Color color) {
+    String old = getAsString(x, y);
     _set(x, y, color);
     notifyColorChange(x, y, old, color.color);
   }
-
-  String getByPoint(Point<int> p) => get(p.x, p.y);
-  String get(int x, int y) => getColor(x, y).color;
-  Color getColor(int x, int y) => _colors[y][x];
 
   void _set(int x, int y, Color color) {
     _colors[y][x] = (color == null) ? new Color(null) : color;
@@ -126,8 +123,8 @@ class Pixels {
   }
 
   void movePixel(int x, int y, int deltaX, int deltaY, {bool copy: false}) {
-    setColor(x + deltaX, y + deltaY, getColor(x, y));
-    if (!copy) set(x, y, null);
+    set(x + deltaX, y + deltaY, get(x, y));
+    if (!copy) setByString(x, y, null);
   }
 }
 

@@ -18,7 +18,7 @@ class FloatLayer extends Outlinable {
   factory FloatLayer(Pixels pixels, Iterable<Point<int>> points) {
     final Map<Point<int>, String> m = new HashMap();
     points.forEach((p) {
-      m[p] = pixels.getByPoint(p);
+      m[p] = pixels.getAsString(p.x, p.y);
     });
     return new FloatLayer._(m);
   }

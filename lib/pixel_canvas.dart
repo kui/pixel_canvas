@@ -331,11 +331,10 @@ class PixelCanvasElement extends PolymerElement {
     ctx.clearRect(0, 0, _canvas.width, _canvas.height);
   }
 
-  String getColor(int x, int y) => pixels.get(x, y);
-  String getColorByPoint(Point<int> p) => pixels.getByPoint(p);
+  String getColor(int x, int y) => pixels.getAsString(x, y);
   void setColor(int x, int y, String color) {
     if (!drawable) return;
-    pixels.set(x, y, color);
+    pixels.setByString(x, y, color);
   }
   void setColorByPoint(Point<int> p, String color) =>
       setColor(p.x, p.y, color);

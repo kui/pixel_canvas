@@ -44,7 +44,7 @@ class Bounds extends Outlinable {
 
   factory Bounds.sameColorNeighbors(Pixels pixels, Point<int> basicPoint) {
     final sameColors =
-        new Bounds.sameColor(pixels, pixels.getByPoint(basicPoint));
+        new Bounds.sameColor(pixels, pixels.getAsString(basicPoint.x, basicPoint.y));
     if (sameColors.points.isEmpty) return sameColors;
 
     final points = _getNeighborsWithPointers([basicPoint], sameColors.points);
