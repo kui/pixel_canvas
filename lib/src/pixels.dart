@@ -8,14 +8,14 @@ import 'dart:convert';
  * Model
  */
 class Pixels {
-  final List<List<String>> _colors;
+  final List<List<Color>> _colors;
   final StreamController<ColorChangeEvent> _colorChangeController =
       new StreamController.broadcast();
 
   Pixels(int verticalPixels, int horizontalPixels) :
     this._colors = _createMatrix(verticalPixels, horizontalPixels);
 
-  static List<List<String>> _createMatrix(
+  static List<List<Color>> _createMatrix(
       int verticalPixels, int horizontalPixels) {
 
     if (verticalPixels == null)
@@ -23,27 +23,27 @@ class Pixels {
     if (horizontalPixels == null)
       throw new ArgumentError('Expected horizontalPixels to be non-null');
 
-    return new List<List<String>>.generate(
+    return new List<List<Color>>.generate(
           verticalPixels,
-          (i) => new List<String>.filled(horizontalPixels, null));
+          (_) => new List<Color>.filled(horizontalPixels, new Color(null)));
   }
 
   factory Pixels.generate(
       int verticalPixels,
       int horizontalPixels,
-      String colorGenerator(int x, int y)) {
+      Color colorGenerator(int x, int y)) {
     var px = new Pixels(verticalPixels, horizontalPixels);
     px.eachColorWithIndex(
-        (c, x, y) => px._set(x, y, normalizeColor(colorGenerator(x, y))));
+        (c, x, y) => px._set(x, y, colorGenerator(x, y)));
     return px;
   }
 
   factory Pixels.fromColorMatrix(
-      List<List<String>> colors, int horizontalPixels, int verticalPixels) {
+      List<List<Color>> colors, int horizontalPixels, int verticalPixels) {
     if (colors == null)
       throw new ArgumentError('Expected 1st arg to be non-null');
 
-    return new Pixels.generate(verticalPixels, horizontalPixels, (x, y) {
+    return new Pixels.generate(verticalPixels, horizontalPixels, (int x, int y) {
       if (y >= colors.length) return null;
 
       var row = colors[y];
@@ -59,7 +59,7 @@ class Pixels {
 
   factory Pixels.fromJson(
       String json, int verticalPixels, int horizontalPixels) {
-    if (json.trim().isEmpty) {
+    if (json == null || json.trim().isEmpty) {
       return new Pixels(verticalPixels, horizontalPixels);
     }
 
@@ -68,7 +68,12 @@ class Pixels {
       return new Pixels(verticalPixels, horizontalPixels);
     }
 
-    return new Pixels.fromColorMatrix(matrix, horizontalPixels, verticalPixels);
+    final List<List<Color>> colorMatrix = matrix
+        .map((row) => (row == null) ?
+            null :
+            row.map((c) => new Color(c)).toList(growable: true))
+        .toList(growable: true);
+    return new Pixels.fromColorMatrix(colorMatrix, horizontalPixels, verticalPixels);
   }
 
   factory Pixels.fromPixels(Pixels oldPixels, int verticalPixels, int horizontalPixels) {
@@ -97,21 +102,22 @@ class Pixels {
     }
   }
 
-  void setByPoint(Point<int> p, String color) => set(p.x, p.y, color);
-
-  void set(int x, int y, String color) {
-    final normedColor = normalizeColor(color);
+  void setByPoint(Point<int> p, String colorString) =>
+      set(p.x, p.y, colorString);
+  void set(int x, int y, String colorString, [meta]) =>
+      setColor(x, y, new Color(colorString, meta));
+  void setColor(int x, int y, Color color) {
     String old = get(x, y);
     _set(x, y, color);
-    notifyColorChange(x, y, old, color);
+    notifyColorChange(x, y, old, color.color);
   }
 
   String getByPoint(Point<int> p) => get(p.x, p.y);
+  String get(int x, int y) => getColor(x, y).color;
+  Color getColor(int x, int y) => _colors[y][x];
 
-  String get(int x, int y) => _colors[y][x];
-
-  void _set(int x, int y, String color) {
-    _colors[y][x] = color;
+  void _set(int x, int y, Color color) {
+    _colors[y][x] = (color == null) ? new Color(null) : color;
   }
 
   void notifyColorChange(int x, int y, String oldColor, String newColor) {
@@ -120,15 +126,29 @@ class Pixels {
   }
 
   void movePixel(int x, int y, int deltaX, int deltaY, {bool copy: false}) {
-    set(x + deltaX, y + deltaY, get(x, y));
+    setColor(x + deltaX, y + deltaY, getColor(x, y));
     if (!copy) set(x, y, null);
   }
 }
 
-String normalizeColor(String color) {
-  if (color == null) return null;
-  String c = color.trim().toLowerCase();
-  return c.isEmpty ? null : c;
+String normalizeColorString(String colorString) =>
+    colorString == null ? null : colorString.trim().toLowerCase();
+
+class Color {
+  static final EMPTY_COLOR = new Color._(null);
+
+  final String color;
+  final meta;
+
+  Color._(String color, [this.meta]): this.color = normalizeColorString(color);
+  factory Color(String color, [meta]) =>
+    (color == null && meta == null) ? EMPTY_COLOR : new Color._(color, meta);
+
+  @override
+  int get hashCode =>
+      (color.hashCode * 31 + (meta.hashCode as int)) & 0x3fffffff;
+  @override
+  bool operator ==(o) => o is Color && o.color == color && o.meta == meta;
 }
 
 class ColorChangeEvent {
