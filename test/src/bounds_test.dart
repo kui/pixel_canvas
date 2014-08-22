@@ -9,7 +9,7 @@ final colors =
      [null, 'a',  'a',  'c',  'c'],
      ['d', null,  'a',  'c',  'a',  'e'],
      [null, 'b',  'b',  'b',  'b']
-     ];
+     ].map((List<String> row) => row.map((s) => new Color(s)).toList()).toList();
 final Pixels pixels = new Pixels.fromColorMatrix(colors, 6, 5);
 Point<int> p(int x, int y) => new Point(x, y);
 HorizontalLine hl(int x, int y) => new HorizontalLine(p(x,y));
@@ -50,11 +50,11 @@ main() {
     expect(r8.outline, [].toSet());
   });
   test('Bounds.sameColor: exsiting color', () {
-    final r1 = new Bounds.sameColor(pixels, 'c');
+    final r1 = new Bounds.sameColor(pixels, new Color('c'));
     expect(r1.points, [p(3,1),p(4,1),p(3,2)].toSet());
     expect(r1.outline, [hl(3,1),hl(4,1),hl(3,3),hl(4,2),vl(3,1),vl(3,2),vl(5,1),vl(4,2)].toSet());
 
-    final r2 = new Bounds.sameColor(pixels, 'd');
+    final r2 = new Bounds.sameColor(pixels, new Color('d'));
     expect(r2.points, [p(0,2)].toSet());
     expect(r2.outline, [hl(0,2),hl(0,3),vl(0,2),vl(1,2)].toSet());
 
@@ -65,11 +65,11 @@ main() {
          p(0,4),p(1,4),p(2,4),p(3,4),p(4,4)].toSet());
   });
   test('Bounds.sameColor: non-exsiting color', () {
-    final r1 = new Bounds.sameColor(pixels, 'foo');
+    final r1 = new Bounds.sameColor(pixels, new Color('foo'));
     expect(r1.points, [].toSet());
     expect(r1.outline, [].toSet());
 
-    final r2 = new Bounds.sameColor(pixels, '');
+    final r2 = new Bounds.sameColor(pixels, new Color(''));
     expect(r2.points, [].toSet());
     expect(r2.outline, [].toSet());
   });

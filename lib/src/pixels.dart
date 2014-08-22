@@ -92,12 +92,12 @@ class Pixels {
   Rectangle<int> get rectangle =>
       new Rectangle(0, 0, horizontalPixels - 1, verticalPixels - 1);
 
-  void eachColorWithIndex(void f(String color, int x, int y)) {
+  void eachColorWithIndex(void f(Color color, int x, int y)) {
     var maxColLength = horizontalPixels;
     var maxRowLength = verticalPixels;
     for(int i = 0; i < maxColLength; i++) {
       for(int j = 0; j < maxRowLength; j++) {
-        f(getAsString(i, j), i, j);
+        f(get(i, j), i, j);
       }
     }
   }
@@ -108,16 +108,16 @@ class Pixels {
   void setByString(int x, int y, String colorString, [meta]) =>
       set(x, y, new Color(colorString, meta));
   void set(int x, int y, Color color) {
-    String old = getAsString(x, y);
+    Color old = get(x, y);
     _set(x, y, color);
-    notifyColorChange(x, y, old, color.color);
+    _notifyColorChange(x, y, old, color);
   }
 
   void _set(int x, int y, Color color) {
     _colors[y][x] = (color == null) ? new Color(null) : color;
   }
 
-  void notifyColorChange(int x, int y, String oldColor, String newColor) {
+  void _notifyColorChange(int x, int y, Color oldColor, Color newColor) {
     if (oldColor == newColor) return;
     _colorChangeController.add(new ColorChangeEvent(x, y, oldColor, newColor));
   }
@@ -142,14 +142,19 @@ class Color {
     (color == null && meta == null) ? EMPTY_COLOR : new Color._(color, meta);
 
   @override
-  int get hashCode =>
-      (color.hashCode * 31 + (meta.hashCode as int)) & 0x3fffffff;
+  int get hashCode => color.hashCode;
   @override
-  bool operator ==(o) => o is Color && o.color == color && o.meta == meta;
+  bool operator ==(o) => o is Color && o.color == color;
+
+  bool get isEmpty => color == null || color.isEmpty;
+  bool get isNotEmpty => color != null && color.isNotEmpty;
+
+  @override
+  String toString() => 'Color($color,$meta)';
 }
 
 class ColorChangeEvent {
   final int x, y;
-  final String oldColor, newColor;
+  final Color oldColor, newColor;
   ColorChangeEvent(this.x, this.y, this.oldColor, this.newColor);
 }

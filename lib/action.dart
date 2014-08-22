@@ -27,14 +27,14 @@ class DrawingAction extends Action {
   @override
   handleMouseDown(Pixel pixel) {
     super.handleMouseDown(pixel);
-    pixel.color = canvas.drawingColor;
+    canvas.draw(pixel.x, pixel.y);
   }
 
   @override
   handleMouseOver(Pixel pixel) {
     super.handleMouseOver(pixel);
     if (isMouseDown && pixel != null)
-      pixel.color = canvas.drawingColor;
+      canvas.draw(pixel.x, pixel.y);
   }
 }
 
@@ -266,7 +266,7 @@ class SameColorsSelectionAction extends OneShotClickSelectionAction {
   SameColorsSelectionAction._(PixelCanvasElement canvas, Bounds bounds):
     super(canvas, bounds);
 
-  factory SameColorsSelectionAction(PixelCanvasElement canvas, String color) {
+  factory SameColorsSelectionAction(PixelCanvasElement canvas, Color color) {
     final b = new Bounds.sameColor(canvas.pixels, color);
     return new SameColorsSelectionAction._(canvas, b);
   }
@@ -370,7 +370,7 @@ class FloatLayerAction extends OutlinableAction {
     final size = pixelSize * FLOAT_PIXEL_SIZE_FACTOR;
     final margin = ((pixelSize - size) / 2).round();
     final marginVector = new Point<int>(margin, margin);
-    floatLayer.forEach((Point<num> point, color) {
+    floatLayer.forEach((Point<num> point, Color color) {
       final offset = (point * pixelSize) + marginVector;
       ctx
           ..setLineDash([])
@@ -381,9 +381,9 @@ class FloatLayerAction extends OutlinableAction {
           ..rect(offset.x, offset.y, size, size)
           ..stroke();
 
-      if (color != null && color.isNotEmpty) {
+      if (color.isNotEmpty) {
         ctx
-          ..fillStyle = color
+          ..fillStyle = color.color
           ..fill();
       } else {
         ctx

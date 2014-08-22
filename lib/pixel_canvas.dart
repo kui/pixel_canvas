@@ -53,6 +53,10 @@ class PixelCanvasElement extends PolymerElement {
   String get drawingColor => readValue(#drawingColor, () => 'Black');
   set drawingColor(String c) => writeValue(#drawingColor, c);
 
+  @published
+  dynamic get drawingColorMeta => readValue(#drawingColorMeta);
+  set drawingColorMeta(dynamic c) => writeValue(#drawingColorMeta, c);
+
   @observable
   Pixels pixels;
 
@@ -249,7 +253,7 @@ class PixelCanvasElement extends PolymerElement {
 
   void _initPixels() {
     pixels.onColorChange.listen((e) {
-      var p = new Pixel._(e.x, e.y, e.newColor, this);
+      var p = new Pixel._(e.x, e.y, this);
       var change = new PixelColorChangeEvent('pixelcolorchange', this, p, e.oldColor);
       _colorChangeEventsController.add(change);
       render();
@@ -320,9 +324,9 @@ class PixelCanvasElement extends PolymerElement {
 
   void _renderPixels(CanvasRenderingContext2D ctx) {
     pixels.eachColorWithIndex((color, x, y) {
-      if (color == null || color.isEmpty) return;
+      if (color.isEmpty) return;
       ctx
-        ..fillStyle = color
+        ..fillStyle = color.color
         ..fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
     });
   }
@@ -331,13 +335,17 @@ class PixelCanvasElement extends PolymerElement {
     ctx.clearRect(0, 0, _canvas.width, _canvas.height);
   }
 
-  String getColor(int x, int y) => pixels.getAsString(x, y);
-  void setColor(int x, int y, String color) {
+  String getColorString(int x, int y) => pixels.getAsString(x, y);
+  Color getColor(int x, int y) => pixels.get(x, y);
+  void setColor(int x, int y, Color color) {
     if (!drawable) return;
-    pixels.setByString(x, y, color);
+    pixels.set(x, y, color);
   }
-  void setColorByPoint(Point<int> p, String color) =>
-      setColor(p.x, p.y, color);
+  void setColorString(int x, int y, String color, [meta]) =>
+      setColor(x, y, new Color(color, meta));
+  void draw(int x, int y) {
+    setColor(x, y, new Color(drawingColor, drawingColorMeta));
+  }
 
   Pixel detectPixel(MouseEvent event) {
     var rect = _canvas.getBoundingClientRect();
@@ -406,7 +414,7 @@ class PixelCanvasElement extends PolymerElement {
   }
   void selectByColor(String color) {
     if (!drawable) return;
-    final bounds = new Bounds.sameColor(pixels, color.toLowerCase());
+    final bounds = new Bounds.sameColor(pixels, new Color(color));
     currentAction = new ImmutableSelectionAction(this, bounds);
   }
   void selectByColorNeibors(Point<int> point) {
@@ -419,7 +427,7 @@ class PixelCanvasElement extends PolymerElement {
     if (!drawable) return;
     if (currentAction is! SelectionAction) return;
     final points = (currentAction as SelectionAction).bounds.points;
-    _fill(points, drawingColor);
+    _fill(points, new Color(drawingColor, drawingColorMeta));
     clearSelection();
   }
   void copySelection() {
@@ -445,7 +453,7 @@ class PixelCanvasElement extends PolymerElement {
     currentAction = null;
     _fill(points, null);
   }
-  void _fill(Iterable<Point<int>> points, String color) {
+  void _fill(Iterable<Point<int>> points, Color color) {
     points.forEach((p) {
       setColor(p.x, p.y, color);
     });
@@ -456,9 +464,9 @@ class PixelCanvasElement extends PolymerElement {
     if (currentAction is! FloatLayerAction) return;
     final floatLayer = (currentAction as FloatLayerAction).floatLayer;
     final rect = pixels.rectangle;
-    floatLayer.forEach((point, color) {
-      if (!rect.containsPoint(point)) return;
-      setColorByPoint(point, color);
+    floatLayer.forEach((p, color) {
+      if (!rect.containsPoint(p)) return;
+      setColor(p.x, p.y, color);
     });
     currentAction = null;
   }
@@ -470,21 +478,23 @@ class PixelCanvasElement extends PolymerElement {
 }
 
 class Pixel {
-  String _color;
   final PixelCanvasElement _canvas;
   final Point<int> point;
 
-  Pixel._(int x, int y, this._color, this._canvas): this.point = new Point(x, y);
+  Pixel._(int x, int y, this._canvas): this.point = new Point(x, y);
   factory Pixel(int x, int y, PixelCanvasElement canvas) =>
-      new Pixel._(x, y, canvas.getColor(x, y), canvas);
+      new Pixel._(x, y, canvas);
   factory Pixel.fromPoint(Point<int> point, PixelCanvasElement canvas) =>
       new Pixel(point.x, point.y, canvas);
 
-  String get color => _color;
-  set color(String newColor) {
-    _color = newColor;
+  Color get color => _canvas.getColor(point.x, point.y);
+  set color(Color newColor) {
     _canvas.setColor(point.x, point.y, newColor);
   }
+  void setColorString(String colorString, [meta]) {
+      color = new Color(colorString, meta);
+  }
+
   int get x => point.x;
   int get y => point.y;
 
@@ -513,7 +523,7 @@ class PixelMouseEvent extends PixelEvent {
     super(type, c, p);
 }
 class PixelColorChangeEvent extends PixelEvent {
-  final String oldColor;
+  final Color oldColor;
   PixelColorChangeEvent(String type, PixelCanvasElement c, Pixel p,
       this.oldColor): super(type, c, p);
 }
