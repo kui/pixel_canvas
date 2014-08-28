@@ -31,9 +31,6 @@
           canvas
               ..onBeforeRendering.listen((e) => print('render'));
 
-          // pixel-canvas can be downloaded with downloadAs()
-          querySelector('#download-as-png').onClick.listen((e) =>
-              canvas.downloadAs('pixel-canvas.png'));
           querySelector('#select-by-points').onClick.listen((e) =>
               canvas.select([new Point(0, 0), new Point(3, 0)]));
           querySelector('#select-by-rectangle').onClick.listen((e) =>
@@ -79,6 +76,17 @@
               canvas.drawable = e.target.checked);
           querySelector('#dcolor').onInput.listen((e) =>
               canvas.drawingColor = e.target.value);
+
+          // pixel-canvas can be downloaded with downloadAs()
+          querySelector('#download-as-png').onClick.listen((e) =>
+              canvas.downloadAs('pixel-canvas.png'));
+
+          querySelector('#pick-pixel').onClick.listen((e) =>
+              canvas.pickPixel().then((pixel) =>
+                  print('pickPixel: '
+                      'x:${pixel.x}, '
+                      'y:${pixel.y}, '
+                      'color:${pixel.color}')));
         });
       }
     </script>
@@ -182,7 +190,10 @@
       </tr>
       <tr>
         <th>Others</th>
-        <td><button id="download-as-png">dowmloadAs('pixel-canas.png')</button></td>
+        <td>
+          <button id="download-as-png">dowmloadAs('pixel-canas.png')</button>
+          <button id="pick-pixel">pickPixel().then((p) => print(...))</button>
+        </td>
       </tr>
     </table>
 

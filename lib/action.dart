@@ -39,8 +39,8 @@ class DrawingAction extends Action {
 }
 
 abstract class OutlinableAction extends Action {
-  static const LIGHTER_LINE_COLOR = 'rgba(0,0,0,0.5)';
-  static const DARKER_LINE_COLOR = 'rgba(255,255,255,0.5)';
+  static const LIGHTER_LINE_COLOR = 'rgba(0,0,0,0.3)';
+  static const DARKER_LINE_COLOR = 'rgba(255,255,255,0.3)';
 
   static const DASH_INTERVAL = 6;
 
@@ -413,5 +413,24 @@ class FloatLayerAction extends OutlinableAction {
           ..rect(offset.x + 1, offset.y + 1, size - 2, size - 2)
           ..stroke();
     });
+  }
+}
+
+class PixelPickingAction extends Action {
+  final PixelCanvasElement canvas;
+  final List<Completer<Pixel>> completers;
+
+  PixelPickingAction(this.canvas): completers = [];
+
+  @override
+  handleMouseDown(Pixel pixel) {
+    completers.forEach((c) => c.complete(pixel));
+    canvas.currentAction = null;
+  }
+
+  Future<Pixel> createFuture() {
+    final c = new Completer<Pixel>();
+    completers.add(c);
+    return c.future;
   }
 }

@@ -468,6 +468,12 @@ class PixelCanvasElement extends PolymerElement {
     if (currentAction is FloatLayerAction)
       currentAction = null;
   }
+
+  Future<Pixel> pickPixel() {
+    final a = new PixelPickingAction(this);
+    currentAction = a;
+    return a.createFuture();
+  }
 }
 
 class Pixel {
