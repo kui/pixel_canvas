@@ -33,8 +33,7 @@ class DrawingAction extends Action {
   @override
   handleMouseOver(Pixel pixel) {
     super.handleMouseOver(pixel);
-    if (isMouseDown && pixel != null)
-      pixel.color = canvas.drawingColor;
+    if (isMouseDown && pixel != null) pixel.color = canvas.drawingColor;
   }
 }
 
@@ -53,28 +52,27 @@ abstract class OutlinableAction extends Action {
     final gridlineWidth = canvas.gridlineWidth;
 
     ctx.beginPath();
-    for(Line l in outline) {
+    for (Line l in outline) {
       final p = l.base;
       final x = p.x * pixelSize;
       final y = p.y * pixelSize;
       if (l is HorizontalLine) {
         ctx
-            ..moveTo(x, y + l.slip)
-            ..lineTo(x + pixelSize, y + l.slip);
-      } else { // l is VerticalLine
+          ..moveTo(x, y + l.slip)
+          ..lineTo(x + pixelSize, y + l.slip);
+      } else {
+        // l is VerticalLine
         ctx
-            ..moveTo(x + l.slip, y)
-            ..lineTo(x + l.slip, y + pixelSize);
+          ..moveTo(x + l.slip, y)
+          ..lineTo(x + l.slip, y + pixelSize);
       }
     }
     ctx
       ..lineWidth = gridlineWidth + 1
       ..setLineDash([DASH_INTERVAL])
-
       ..strokeStyle = DARKER_LINE_COLOR
       ..lineDashOffset = 0
       ..stroke()
-
       ..strokeStyle = LIGHTER_LINE_COLOR
       ..lineDashOffset = DASH_INTERVAL
       ..stroke();
@@ -90,8 +88,8 @@ abstract class SelectionAction extends OutlinableAction {
 }
 
 class PointsSelectionAction extends SelectionAction {
-  PointsSelectionAction(PixelCanvasElement canvas, Bounds bounds) :
-    super(canvas, bounds);
+  PointsSelectionAction(PixelCanvasElement canvas, Bounds bounds)
+      : super(canvas, bounds);
 
   @override
   handleMouseDown(Pixel pixel) {
@@ -117,8 +115,8 @@ class PointsSelectionAction extends SelectionAction {
 
   PointsSelectionAction _addPoint(Point<int> p) {
     final newPoints = new Set()
-        ..addAll(bounds.points)
-        ..add(p);
+      ..addAll(bounds.points)
+      ..add(p);
     return new PointsSelectionAction(
         canvas, new Bounds(canvas.pixels, newPoints))
       ..isMouseDown = isMouseDown;
@@ -138,23 +136,21 @@ class InstantSelectionAction extends PointsSelectionAction {
   bool isTargetKeyDown = false;
   final int targetKeyCode;
 
-  InstantSelectionAction(PixelCanvasElement canvas, Bounds bounds, this.targetKeyCode) :
-    super(canvas, bounds);
+  InstantSelectionAction(
+      PixelCanvasElement canvas, Bounds bounds, this.targetKeyCode)
+      : super(canvas, bounds);
 
   bool isReady(KeyboardEvent event) =>
-      targetKeyCode == event.which
-      && canvas.currentAction is DrawingAction;
+      targetKeyCode == event.which && canvas.currentAction is DrawingAction;
 
   @override
   handleKeyDown(KeyboardEvent event) {
-    if (event.which == targetKeyCode)
-      isTargetKeyDown = true;
+    if (event.which == targetKeyCode) isTargetKeyDown = true;
   }
 
   @override
   handleKeyUp(KeyboardEvent event) {
-    if (event.which == targetKeyCode)
-      isTargetKeyDown = false;
+    if (event.which == targetKeyCode) isTargetKeyDown = false;
   }
 
   @override
@@ -162,8 +158,7 @@ class InstantSelectionAction extends PointsSelectionAction {
     if (isTargetKeyDown) {
       super._updateCurrentAction(pixel);
     } else if (isMouseDown) {
-      final drawing = new DrawingAction(canvas)
-          ..isMouseDown = true;
+      final drawing = new DrawingAction(canvas)..isMouseDown = true;
       canvas.currentAction = drawing;
       drawing.handleMouseOver(pixel);
     }
@@ -172,8 +167,8 @@ class InstantSelectionAction extends PointsSelectionAction {
   @override
   InstantSelectionAction _addPoint(Point<int> p) {
     final newPoints = new Set()
-        ..addAll(bounds.points)
-        ..add(p);
+      ..addAll(bounds.points)
+      ..add(p);
     return new InstantSelectionAction(
         canvas, new Bounds(canvas.pixels, newPoints), targetKeyCode)
       ..isMouseDown = isMouseDown
@@ -184,8 +179,9 @@ class InstantSelectionAction extends PointsSelectionAction {
 class RectangleSelectionAction extends SelectionAction {
   final Point<int> grabbedPoint;
 
-  RectangleSelectionAction(PixelCanvasElement canvas, Bounds bounds, this.grabbedPoint) :
-    super(canvas, bounds);
+  RectangleSelectionAction(
+      PixelCanvasElement canvas, Bounds bounds, this.grabbedPoint)
+      : super(canvas, bounds);
 
   @override
   handleMouseDown(Pixel pixel) {
@@ -211,9 +207,9 @@ class RectangleSelectionAction extends SelectionAction {
     if (!isMouseDown || pixel == null) return;
 
     final p = pixel.point;
-    final rect = (_grabbedPoint == null) ?
-        new Rectangle(p.x, p.y, 0, 0) :
-        new Rectangle.fromPoints(p, _grabbedPoint);
+    final rect = (_grabbedPoint == null)
+        ? new Rectangle(p.x, p.y, 0, 0)
+        : new Rectangle.fromPoints(p, _grabbedPoint);
     final gp = (_grabbedPoint == null) ? p : _grabbedPoint;
     final bounds = new Bounds.fromRectangle(canvas.pixels, rect);
     canvas.currentAction = new RectangleSelectionAction(canvas, bounds, gp)
@@ -234,7 +230,8 @@ class RectangleSelectionAction extends SelectionAction {
 }
 
 abstract class OneShotClickSelectionAction extends SelectionAction {
-  OneShotClickSelectionAction(PixelCanvasElement canvas, Bounds bounds) : super(canvas, bounds) {
+  OneShotClickSelectionAction(PixelCanvasElement canvas, Bounds bounds)
+      : super(canvas, bounds) {
     canvas.setCanvasClass('selected');
   }
 
@@ -243,8 +240,7 @@ abstract class OneShotClickSelectionAction extends SelectionAction {
   @override
   handleMouseDown(Pixel pixel) {
     super.handleMouseDown(pixel);
-    canvas.currentAction = createFromPixel(pixel)
-      ..isMouseDown = isMouseDown;
+    canvas.currentAction = createFromPixel(pixel)..isMouseDown = isMouseDown;
   }
 
   @override
@@ -263,8 +259,8 @@ abstract class OneShotClickSelectionAction extends SelectionAction {
 }
 
 class SameColorsSelectionAction extends OneShotClickSelectionAction {
-  SameColorsSelectionAction._(PixelCanvasElement canvas, Bounds bounds):
-    super(canvas, bounds);
+  SameColorsSelectionAction._(PixelCanvasElement canvas, Bounds bounds)
+      : super(canvas, bounds);
 
   factory SameColorsSelectionAction(PixelCanvasElement canvas, String color) {
     final b = new Bounds.sameColor(canvas.pixels, color);
@@ -282,10 +278,11 @@ class SameColorsSelectionAction extends OneShotClickSelectionAction {
 }
 
 class SameColorNeighborsSelectionAction extends OneShotClickSelectionAction {
-  SameColorNeighborsSelectionAction._(PixelCanvasElement canvas, Bounds bounds) :
-    super(canvas, bounds);
+  SameColorNeighborsSelectionAction._(PixelCanvasElement canvas, Bounds bounds)
+      : super(canvas, bounds);
 
-  factory SameColorNeighborsSelectionAction(PixelCanvasElement canvas, Point<int> point) {
+  factory SameColorNeighborsSelectionAction(
+      PixelCanvasElement canvas, Point<int> point) {
     final b = new Bounds.sameColorNeighbors(canvas.pixels, point);
     return new SameColorNeighborsSelectionAction._(canvas, b);
   }
@@ -301,8 +298,8 @@ class SameColorNeighborsSelectionAction extends OneShotClickSelectionAction {
 }
 
 class ImmutableSelectionAction extends SelectionAction {
-  ImmutableSelectionAction(PixelCanvasElement canvas, Bounds bounds):
-    super(canvas, bounds);
+  ImmutableSelectionAction(PixelCanvasElement canvas, Bounds bounds)
+      : super(canvas, bounds);
 
   @override
   handleMouseOver(Pixel pixel) {
@@ -323,9 +320,9 @@ class FloatLayerAction extends OutlinableAction {
   final FloatLayer floatLayer;
   get outline => floatLayer.outline;
 
-  FloatLayerAction(PixelCanvasElement canvas, Iterable<Point<int>> points):
-    this.canvas = canvas,
-    this.floatLayer = new FloatLayer(canvas.pixels, points);
+  FloatLayerAction(PixelCanvasElement canvas, Iterable<Point<int>> points)
+      : this.canvas = canvas,
+        this.floatLayer = new FloatLayer(canvas.pixels, points);
 
   @override
   handleMouseDown(Pixel pixel) {
@@ -375,13 +372,12 @@ class FloatLayerAction extends OutlinableAction {
     floatLayer.forEach((Point<num> point, color) {
       final offset = (point * pixelSize) + marginVector;
       ctx
-          ..setLineDash([])
-          ..lineWidth = 1
-
-          ..beginPath()
-          ..strokeStyle = LIGHTER_LINE_COLOR
-          ..rect(offset.x, offset.y, size, size)
-          ..stroke();
+        ..setLineDash([])
+        ..lineWidth = 1
+        ..beginPath()
+        ..strokeStyle = LIGHTER_LINE_COLOR
+        ..rect(offset.x, offset.y, size, size)
+        ..stroke();
 
       if (color != null && color.isNotEmpty) {
         ctx
@@ -389,31 +385,30 @@ class FloatLayerAction extends OutlinableAction {
           ..fill();
       } else {
         ctx
-            // draw a white cross
-            ..beginPath()
-            ..strokeStyle = DARKER_LINE_COLOR
-            ..moveTo(offset.x, offset.y)
-            ..lineTo(offset.x + size, offset.y + size)
-            ..moveTo(offset.x + size, offset.y)
-            ..lineTo(offset.x, offset.y + size)
-            ..stroke()
+          // draw a white cross
+          ..beginPath()
+          ..strokeStyle = DARKER_LINE_COLOR
+          ..moveTo(offset.x, offset.y)
+          ..lineTo(offset.x + size, offset.y + size)
+          ..moveTo(offset.x + size, offset.y)
+          ..lineTo(offset.x, offset.y + size)
+          ..stroke()
 
-            // draw a black cross
-            ..beginPath()
-            ..strokeStyle = LIGHTER_LINE_COLOR
-            ..moveTo(offset.x, offset.y + 1)
-            ..lineTo(offset.x + size - 1, offset.y + size)
-            ..moveTo(offset.x + size, offset.y + 1)
-            ..lineTo(offset.x + 1, offset.y + size)
-            ..stroke()
-            ;
+          // draw a black cross
+          ..beginPath()
+          ..strokeStyle = LIGHTER_LINE_COLOR
+          ..moveTo(offset.x, offset.y + 1)
+          ..lineTo(offset.x + size - 1, offset.y + size)
+          ..moveTo(offset.x + size, offset.y + 1)
+          ..lineTo(offset.x + 1, offset.y + size)
+          ..stroke();
       }
 
       ctx
-          ..beginPath()
-          ..strokeStyle = DARKER_LINE_COLOR
-          ..rect(offset.x + 1, offset.y + 1, size - 2, size - 2)
-          ..stroke();
+        ..beginPath()
+        ..strokeStyle = DARKER_LINE_COLOR
+        ..rect(offset.x + 1, offset.y + 1, size - 2, size - 2)
+        ..stroke();
     });
   }
 }
@@ -422,7 +417,7 @@ class PixelPickingAction extends Action {
   final PixelCanvasElement canvas;
   final List<Completer<Pixel>> completers;
 
-  PixelPickingAction(this.canvas): completers = [];
+  PixelPickingAction(this.canvas) : completers = [];
 
   @override
   handleMouseDown(Pixel pixel) {

@@ -17,8 +17,7 @@ class Bounds extends Outlinable {
 
   factory Bounds.fromRectangle(Pixels pixels, Rectangle rectangle) {
     final Rectangle<int> intersects = rectangle.intersection(pixels.rectangle);
-    if (intersects == null)
-      return new Bounds._(new Set());
+    if (intersects == null) return new Bounds._(new Set());
 
     final base = intersects.topLeft;
     final width = intersects.width;
@@ -51,7 +50,8 @@ class Bounds extends Outlinable {
     return new Bounds._(points.toSet());
   }
 
-  static Iterable<Point<int>> _getNeighborsWithPointers(List<Point<int>> basics, Iterable<Point<int>> targets) {
+  static Iterable<Point<int>> _getNeighborsWithPointers(
+      List<Point<int>> basics, Iterable<Point<int>> targets) {
     final parentPoints = [];
     parentPoints.addAll(targets); // clone
 
@@ -67,6 +67,7 @@ class Bounds extends Outlinable {
     neighbors.addAll(basics);
     return _getNeighborsWithPointers(neighbors, parentPoints);
   }
-  static Set<Point<int>> _getNeiborsWithPointer(Point<int> basic, List<Point<int>> targets) =>
+  static Set<Point<int>> _getNeiborsWithPointer(
+          Point<int> basic, List<Point<int>> targets) =>
       getArounds(basic).where(targets.contains).toSet();
 }

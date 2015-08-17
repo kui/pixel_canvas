@@ -13,10 +13,9 @@ part 'action.dart';
 
 @CustomTag('pixel-canvas')
 class PixelCanvasElement extends PolymerElement {
-
   static const CANVAS_FPS = 30;
   static final RENDERER_DELAY =
-      new Duration(milliseconds: (1000/CANVAS_FPS).floor());
+      new Duration(milliseconds: (1000 / CANVAS_FPS).floor());
   static const LEFT_BUTTON = 1;
   static const DEFAULT_PIXELS = 32;
   static const DEFAULT_PIXEL_SIZE = 24;
@@ -27,7 +26,8 @@ class PixelCanvasElement extends PolymerElement {
   set verticalPixels(int p) => writeValue(#verticalPixels, p);
 
   @PublishedProperty(reflect: true)
-  int get horizontalPixels => readValue(#horizontalPixels, () => DEFAULT_PIXELS);
+  int get horizontalPixels =>
+      readValue(#horizontalPixels, () => DEFAULT_PIXELS);
   set horizontalPixels(int p) => writeValue(#horizontalPixels, p);
 
   @PublishedProperty(reflect: true)
@@ -39,7 +39,8 @@ class PixelCanvasElement extends PolymerElement {
   set noGridlines(bool b) => writeValue(#noGridlines, b);
 
   @PublishedProperty(reflect: true)
-  String get gridlineColor => readValue(#gridlineColor, () => 'rgba(0, 0, 0, 0.2)');
+  String get gridlineColor =>
+      readValue(#gridlineColor, () => 'rgba(0, 0, 0, 0.2)');
   set gridlineColor(String c) => writeValue(#gridlineColor, c);
 
   @PublishedProperty(reflect: true)
@@ -103,10 +104,8 @@ class PixelCanvasElement extends PolymerElement {
       _mouseOverEventsController.stream;
   Stream<PixelMouseEvent> get onPixelMouseDown =>
       _mouseDownEventsController.stream;
-  Stream<PixelMouseEvent> get onPixelMouseUp =>
-      _mouseUpEventsController.stream;
-  Stream<PixelMouseEvent> get onPixelClick =>
-      _clickEventsController.stream;
+  Stream<PixelMouseEvent> get onPixelMouseUp => _mouseUpEventsController.stream;
+  Stream<PixelMouseEvent> get onPixelClick => _clickEventsController.stream;
   Stream<PixelColorChangeEvent> get onPixelColorChange =>
       _colorChangeEventsController.stream;
   Stream<PixelCanvasEvent> get onBeforeRendering =>
@@ -140,13 +139,12 @@ class PixelCanvasElement extends PolymerElement {
   gridlineColorChanged() => render();
   pixelSizeChanged() => render();
 
-  verticalPixelsChanged()   => handleCanvasChange();
+  verticalPixelsChanged() => handleCanvasChange();
   horizontalPixelsChanged() => handleCanvasChange();
 
   handleCanvasChange() {
     if (verticalPixels == pixels.verticalPixels &&
-        horizontalPixels == pixels.horizontalPixels)
-      return;
+        horizontalPixels == pixels.horizontalPixels) return;
 
     currentAction = null;
 
@@ -161,17 +159,15 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void _dispachActionChange(Action oldAction, Action newAction) =>
-    _actionChangeEventController.add(
-      new ActionChangeEvent(oldAction, newAction));
+      _actionChangeEventController
+          .add(new ActionChangeEvent(oldAction, newAction));
 
   void _mouseOveredPxChange(Pixel oldPixel, Pixel newPixel, MouseEvent event) {
-    if (newPixel != null)
-      _dispatchPixelMouseEvent(_mouseOverEventsController, 'mouseover',
-          event, newPixel);
+    if (newPixel != null) _dispatchPixelMouseEvent(
+        _mouseOverEventsController, 'mouseover', event, newPixel);
 
-    if (oldPixel != null)
-      _dispatchPixelMouseEvent(_mouseOutEventsController, 'mouseout',
-          event, oldPixel);
+    if (oldPixel != null) _dispatchPixelMouseEvent(
+        _mouseOutEventsController, 'mouseout', event, oldPixel);
 
     currentAction.handleMouseOver(newPixel);
   }
@@ -184,18 +180,17 @@ class PixelCanvasElement extends PolymerElement {
 
   void _initEvents() {
     _canvas
-        ..onMouseMove.listen(_updateMouseOveredPx)
-        ..onMouseOut.listen(_updateMouseOveredPx)
-        ..onMouseOver.listen(_updateMouseOveredPx)
-        ..onMouseDown.listen(_handleMouseDown)
-        ..onClick.listen((MouseEvent event) =>
-            _dispatchPixelMouseEvent(_clickEventsController, 'pixelclick',
-                event, mouseOveredPixel))
-        ..onMouseUp.listen(_handleMouseUp);
+      ..onMouseMove.listen(_updateMouseOveredPx)
+      ..onMouseOut.listen(_updateMouseOveredPx)
+      ..onMouseOver.listen(_updateMouseOveredPx)
+      ..onMouseDown.listen(_handleMouseDown)
+      ..onClick.listen((MouseEvent event) => _dispatchPixelMouseEvent(
+          _clickEventsController, 'pixelclick', event, mouseOveredPixel))
+      ..onMouseUp.listen(_handleMouseUp);
     document
-        ..onMouseUp.listen(_handleGlobalMouseUp)
-        ..onKeyDown.listen(_handleKeyDown)
-        ..onKeyUp.listen(_handleKeyUp);
+      ..onMouseUp.listen(_handleGlobalMouseUp)
+      ..onKeyDown.listen(_handleKeyDown)
+      ..onKeyUp.listen(_handleKeyUp);
   }
 
   _handleGlobalMouseUp(MouseEvent e) {
@@ -205,8 +200,8 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   _handleMouseUp(MouseEvent event) {
-    _dispatchPixelMouseEvent(_mouseUpEventsController, 'pixelmouseup',
-        event, mouseOveredPixel);
+    _dispatchPixelMouseEvent(
+        _mouseUpEventsController, 'pixelmouseup', event, mouseOveredPixel);
   }
 
   _updateMouseOveredPx(MouseEvent mouseEvent) {
@@ -219,8 +214,8 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   _handleMouseDown(MouseEvent event) {
-    _dispatchPixelMouseEvent(_mouseDownEventsController,
-        'pixelmousedown', event, mouseOveredPixel);
+    _dispatchPixelMouseEvent(
+        _mouseDownEventsController, 'pixelmousedown', event, mouseOveredPixel);
 
     if (_isLeftButton(event)) {
       currentAction.handleMouseDown(mouseOveredPixel);
@@ -228,8 +223,7 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void _handleKeyDown(KeyboardEvent event) {
-    if (_instantAction == null)
-      _createInstantAction();
+    if (_instantAction == null) _createInstantAction();
     if (_instantAction.isReady(event)) {
       _instantAction.isMouseDown = currentAction.isMouseDown;
       currentAction = _instantAction;
@@ -240,7 +234,8 @@ class PixelCanvasElement extends PolymerElement {
     currentAction.handleKeyUp(event);
   }
 
-  _dispatchPixelMouseEvent(StreamController c, String type, MouseEvent e, Pixel p) =>
+  _dispatchPixelMouseEvent(
+          StreamController c, String type, MouseEvent e, Pixel p) =>
       c.add(new PixelMouseEvent(type, this, p, e));
 
   _createInstantAction() {
@@ -253,7 +248,8 @@ class PixelCanvasElement extends PolymerElement {
   void _initPixels() {
     pixels.onColorChange.listen((e) {
       var p = new Pixel._(e.x, e.y, e.newColor, this);
-      var change = new PixelColorChangeEvent('pixelcolorchange', this, p, e.oldColor);
+      var change =
+          new PixelColorChangeEvent('pixelcolorchange', this, p, e.oldColor);
       _colorChangeEventsController.add(change);
       render();
     });
@@ -270,15 +266,15 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   void renderImmediately() {
-    _beforeRenderingEventController.add(
-        new PixelCanvasEvent('beforerendering', this));
+    _beforeRenderingEventController
+        .add(new PixelCanvasEvent('beforerendering', this));
 
     final ctx = _canvasContext;
     _render(ctx);
     _rendererTimer = null;
 
-    _afterRenderingEventController.add(
-        new PixelCanvasEvent('afterrendering', this));
+    _afterRenderingEventController
+        .add(new PixelCanvasEvent('afterrendering', this));
   }
 
   void _render(CanvasRenderingContext2D ctx) {
@@ -302,23 +298,23 @@ class PixelCanvasElement extends PolymerElement {
     for (int i = 0; i < verticalPixels + 1; i++) {
       var y = pixelSize * i;
       ctx
-          ..moveTo(0, y)
-          ..lineTo(_canvas.width, y);
+        ..moveTo(0, y)
+        ..lineTo(_canvas.width, y);
     }
 
     // vertical gridlines
     for (int i = 0; i < horizontalPixels + 1; i++) {
       var x = pixelSize * i;
       ctx
-          ..moveTo(x, 0)
-          ..lineTo(x, _canvas.height);
+        ..moveTo(x, 0)
+        ..lineTo(x, _canvas.height);
     }
 
     ctx
-        ..lineWidth = gridlineWidth
-        ..strokeStyle = gridlineColor
-        ..setLineDash([])
-        ..stroke();
+      ..lineWidth = gridlineWidth
+      ..strokeStyle = gridlineColor
+      ..setLineDash([])
+      ..stroke();
   }
 
   void _renderPixels(CanvasRenderingContext2D ctx) {
@@ -340,8 +336,7 @@ class PixelCanvasElement extends PolymerElement {
     if (!drawable) return;
     pixels.set(x, y, color);
   }
-  void setColorByPoint(Point<int> p, String color) =>
-      setColor(p.x, p.y, color);
+  void setColorByPoint(Point<int> p, String color) => setColor(p.x, p.y, color);
 
   Pixel detectPixel(MouseEvent event) {
     var rect = _canvas.getBoundingClientRect();
@@ -353,8 +348,8 @@ class PixelCanvasElement extends PolymerElement {
 
     double eventX = client.x - rect.left;
     double eventY = client.y - rect.top;
-    int x = (eventX/pixelSize).floor();
-    int y = (eventY/pixelSize).floor();
+    int x = (eventX / pixelSize).floor();
+    int y = (eventY / pixelSize).floor();
 
     if (x >= horizontalPixels || y >= verticalPixels) {
       return null;
@@ -368,7 +363,7 @@ class PixelCanvasElement extends PolymerElement {
   }
 
   String toDataUrl([String type = 'image/png', num quality]) =>
-    _canvas.toDataUrl(type, quality);
+      _canvas.toDataUrl(type, quality);
 
   void downloadAs(String name, [String type = 'image/png', num quality]) {
     AnchorElement anchor = new AnchorElement()
@@ -405,7 +400,8 @@ class PixelCanvasElement extends PolymerElement {
   }
   void selectByRectangle(int left, int top, int width, int height) {
     if (!drawable) return;
-    final bounds = new Bounds.fromRectangle(pixels, new Rectangle(left, top, width, height));
+    final bounds = new Bounds.fromRectangle(
+        pixels, new Rectangle(left, top, width, height));
     currentAction = new ImmutableSelectionAction(this, bounds);
   }
   void selectByColor(String color) {
@@ -468,8 +464,7 @@ class PixelCanvasElement extends PolymerElement {
   }
   void deleteFloatLayer() {
     if (!drawable) return;
-    if (currentAction is FloatLayerAction)
-      currentAction = null;
+    if (currentAction is FloatLayerAction) currentAction = null;
   }
 
   Future<Pixel> pickPixel() {
@@ -484,7 +479,8 @@ class Pixel {
   final PixelCanvasElement _canvas;
   final Point<int> point;
 
-  Pixel._(int x, int y, this._color, this._canvas): this.point = new Point(x, y);
+  Pixel._(int x, int y, this._color, this._canvas)
+      : this.point = new Point(x, y);
   factory Pixel(int x, int y, PixelCanvasElement canvas) =>
       new Pixel._(x, y, canvas.getColor(x, y), canvas);
   factory Pixel.fromPoint(Point<int> point, PixelCanvasElement canvas) =>
@@ -502,8 +498,7 @@ class Pixel {
   @override
   String toString() => 'Pixel(${point.x},${point.y},$color)';
   @override
-  bool operator ==(o) =>
-      o is Pixel && o.point == point;
+  bool operator ==(o) => o is Pixel && o.point == point;
   @override
   int get hashCode => (color.hashCode * 31 + point.hashCode) & 0x3fffffff;
 }
@@ -513,19 +508,20 @@ class PixelCanvasEvent {
   final PixelCanvasElement canvas;
   PixelCanvasEvent(this.type, this.canvas);
 }
-class PixelEvent extends PixelCanvasEvent{
+class PixelEvent extends PixelCanvasEvent {
   final Pixel pixel;
-  PixelEvent(String type, PixelCanvasElement c, this.pixel): super(type, c);
+  PixelEvent(String type, PixelCanvasElement c, this.pixel) : super(type, c);
 }
 class PixelMouseEvent extends PixelEvent {
   final MouseEvent origin;
-  PixelMouseEvent(String type, PixelCanvasElement c, Pixel p, this.origin):
-    super(type, c, p);
+  PixelMouseEvent(String type, PixelCanvasElement c, Pixel p, this.origin)
+      : super(type, c, p);
 }
 class PixelColorChangeEvent extends PixelEvent {
   final String oldColor;
-  PixelColorChangeEvent(String type, PixelCanvasElement c, Pixel p,
-      this.oldColor): super(type, c, p);
+  PixelColorChangeEvent(
+      String type, PixelCanvasElement c, Pixel p, this.oldColor)
+      : super(type, c, p);
 }
 class ActionChangeEvent {
   final oldAction;

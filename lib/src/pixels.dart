@@ -12,25 +12,21 @@ class Pixels {
   final StreamController<ColorChangeEvent> _colorChangeController =
       new StreamController.broadcast();
 
-  Pixels(int verticalPixels, int horizontalPixels) :
-    this._colors = _createMatrix(verticalPixels, horizontalPixels);
+  Pixels(int verticalPixels, int horizontalPixels)
+      : this._colors = _createMatrix(verticalPixels, horizontalPixels);
 
   static List<List<String>> _createMatrix(
       int verticalPixels, int horizontalPixels) {
-
-    if (verticalPixels == null)
-      throw new ArgumentError('Expected verticalPixels to be non-null');
-    if (horizontalPixels == null)
-      throw new ArgumentError('Expected horizontalPixels to be non-null');
+    if (verticalPixels ==
+        null) throw new ArgumentError('Expected verticalPixels to be non-null');
+    if (horizontalPixels == null) throw new ArgumentError(
+        'Expected horizontalPixels to be non-null');
 
     return new List<List<String>>.generate(
-          verticalPixels,
-          (i) => new List<String>.filled(horizontalPixels, null));
+        verticalPixels, (i) => new List<String>.filled(horizontalPixels, null));
   }
 
-  factory Pixels.generate(
-      int verticalPixels,
-      int horizontalPixels,
+  factory Pixels.generate(int verticalPixels, int horizontalPixels,
       String colorGenerator(int x, int y)) {
     var px = new Pixels(verticalPixels, horizontalPixels);
     px.eachColorWithIndex(
@@ -40,8 +36,8 @@ class Pixels {
 
   factory Pixels.fromColorMatrix(
       List<List<String>> colors, int horizontalPixels, int verticalPixels) {
-    if (colors == null)
-      throw new ArgumentError('Expected 1st arg to be non-null');
+    if (colors ==
+        null) throw new ArgumentError('Expected 1st arg to be non-null');
 
     return new Pixels.generate(verticalPixels, horizontalPixels, (x, y) {
       if (y >= colors.length) return null;
@@ -49,7 +45,7 @@ class Pixels {
       var row = colors[y];
       if (row == null) {
         return null;
-      } else if(x >= row.length){
+      } else if (x >= row.length) {
         return null;
       } else {
         return row[x];
@@ -71,9 +67,10 @@ class Pixels {
     return new Pixels.fromColorMatrix(matrix, horizontalPixels, verticalPixels);
   }
 
-  factory Pixels.fromPixels(Pixels oldPixels, int verticalPixels, int horizontalPixels) {
-    if (oldPixels == null)
-      throw new ArgumentError('Expected 1st arg to be non-null');
+  factory Pixels.fromPixels(
+      Pixels oldPixels, int verticalPixels, int horizontalPixels) {
+    if (oldPixels ==
+        null) throw new ArgumentError('Expected 1st arg to be non-null');
 
     return new Pixels.fromColorMatrix(
         oldPixels._colors, horizontalPixels, verticalPixels);
@@ -90,8 +87,8 @@ class Pixels {
   void eachColorWithIndex(void f(String color, int x, int y)) {
     var maxColLength = horizontalPixels;
     var maxRowLength = verticalPixels;
-    for(int i = 0; i < maxColLength; i++) {
-      for(int j = 0; j < maxRowLength; j++) {
+    for (int i = 0; i < maxColLength; i++) {
+      for (int j = 0; j < maxRowLength; j++) {
         f(get(i, j), i, j);
       }
     }
