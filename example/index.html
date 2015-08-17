@@ -12,86 +12,84 @@
       }
     </style>
 
-    <script src="packages/web_components/platform.js"></script>
-    <script src="packages/web_components/dart_support.js"></script>
-
     <link rel="import" href="packages/pixel_canvas/pixel_canvas.html">
 
     <script type="application/dart">
+      export 'package:polymer/init.dart';
+
       import 'dart:html';
       import 'dart:math';
       import 'package:polymer/polymer.dart';
       import 'package:pixel_canvas/pixel_canvas.dart';
 
-      main() {
-        initPolymer().run(() {
-          PixelCanvasElement canvas = querySelector('pixel-canvas');
+      @whenPolymerReady
+      onReady() {
+        PixelCanvasElement canvas = querySelector('pixel-canvas');
 
-          // you can set callbacks for every re-rendering
-          canvas
-              ..onBeforeRendering.listen((e) => print('render'));
+        // you can set callbacks for every re-rendering
+        canvas
+            ..onBeforeRendering.listen((e) => print('render'));
 
-          querySelector('#select-by-points').onClick.listen((e) =>
-              canvas.select([new Point(0, 0), new Point(3, 0)]));
-          querySelector('#select-by-rectangle').onClick.listen((e) =>
-              canvas.selectByRectangle(0, 1, 3, 2));
-          querySelector('#select-by-color').onClick.listen((e) =>
-              canvas.selectByColor('Black'));
-          querySelector('#select-by-color-neighbor').onClick.listen((e) =>
-              canvas.selectByColorNeibors(new Point(0,0)));
-          querySelector('#clear-selection').onClick.listen((e) =>
-              canvas.clearSelection());
-          querySelector('#delete-selection').onClick.listen((e) =>
-              canvas.deleteSelection());
-          querySelector('#fill-color').onClick.listen((e) =>
-              canvas.fillSelection());
-          querySelector('#copy').onClick.listen((e) =>
-              canvas.copySelection());
-          querySelector('#cut').onClick.listen((e) =>
-              canvas.cutSelection());
-          querySelector('#paste').onClick.listen((e) =>
-              canvas.pasteFloatLayer());
-          querySelector('#delete-floatlayer').onClick.listen((e) =>
-              canvas.deleteFloatLayer());
-          querySelector('#start-selection').onClick.listen((e) =>
-              canvas.startSelection());
-          querySelector('#start-rect-selection').onClick.listen((e) =>
-              canvas.startRectSelection());
-          querySelector('#start-same-colors-selection').onClick.listen((e) =>
-              canvas.startSameColorsSelection());
-          querySelector('#start-same-color-neighbors-selection').onClick.listen((e) =>
-              canvas.startSameColorNeiborsSelection());
+        querySelector('#select-by-points').onClick.listen((e) =>
+            canvas.select([new Point(0, 0), new Point(3, 0)]));
+        querySelector('#select-by-rectangle').onClick.listen((e) =>
+            canvas.selectByRectangle(0, 1, 3, 2));
+        querySelector('#select-by-color').onClick.listen((e) =>
+            canvas.selectByColor('Black'));
+        querySelector('#select-by-color-neighbor').onClick.listen((e) =>
+            canvas.selectByColorNeibors(new Point(0,0)));
+        querySelector('#clear-selection').onClick.listen((e) =>
+            canvas.clearSelection());
+        querySelector('#delete-selection').onClick.listen((e) =>
+            canvas.deleteSelection());
+        querySelector('#fill-color').onClick.listen((e) =>
+            canvas.fillSelection());
+        querySelector('#copy').onClick.listen((e) =>
+            canvas.copySelection());
+        querySelector('#cut').onClick.listen((e) =>
+            canvas.cutSelection());
+        querySelector('#paste').onClick.listen((e) =>
+            canvas.pasteFloatLayer());
+        querySelector('#delete-floatlayer').onClick.listen((e) =>
+            canvas.deleteFloatLayer());
+        querySelector('#start-selection').onClick.listen((e) =>
+            canvas.startSelection());
+        querySelector('#start-rect-selection').onClick.listen((e) =>
+            canvas.startRectSelection());
+        querySelector('#start-same-colors-selection').onClick.listen((e) =>
+            canvas.startSameColorsSelection());
+        querySelector('#start-same-color-neighbors-selection').onClick.listen((e) =>
+            canvas.startSameColorNeiborsSelection());
 
 
-          // sync attribute values
-          querySelector('#pixel-size').onChange.listen((e) =>
-              canvas.pixelSize = int.parse(e.target.value));
-          querySelector('#hpixels').onChange.listen((e) =>
-              canvas.horizontalPixels = int.parse(e.target.value));
-          querySelector('#vpixels').onChange.listen((e) =>
-              canvas.verticalPixels = int.parse(e.target.value));
-          querySelector('#nogridlines').onChange.listen((e) =>
-              canvas.noGridlines = e.target.checked);
-          querySelector('#drawable').onChange.listen((e) =>
-              canvas.drawable = e.target.checked);
-          querySelector('#dcolor').onInput.listen((e) =>
-              canvas.drawingColor = e.target.value);
+        // sync attribute values
+        querySelector('#pixel-size').onChange.listen((e) =>
+            canvas.pixelSize = int.parse(e.target.value));
+        querySelector('#hpixels').onChange.listen((e) =>
+            canvas.horizontalPixels = int.parse(e.target.value));
+        querySelector('#vpixels').onChange.listen((e) =>
+            canvas.verticalPixels = int.parse(e.target.value));
+        querySelector('#nogridlines').onChange.listen((e) =>
+            canvas.noGridlines = e.target.checked);
+        querySelector('#drawable').onChange.listen((e) =>
+            canvas.drawable = e.target.checked);
+        querySelector('#dcolor').onInput.listen((e) =>
+            canvas.drawingColor = e.target.value);
 
-          // pixel-canvas can be downloaded with downloadAs()
-          querySelector('#download-as-png').onClick.listen((e) =>
-              canvas.downloadAs('pixel-canvas.png'));
+        // pixel-canvas can be downloaded with downloadAs()
+        querySelector('#download-as-png').onClick.listen((e) =>
+            canvas.downloadAs('pixel-canvas.png'));
 
-          querySelector('#pick-pixel').onClick.listen((e) =>
-              canvas.pickPixel().then((pixel) =>
-                  print('pickPixel: '
-                      'x:${pixel.x}, '
-                      'y:${pixel.y}, '
-                      'color:${pixel.color}')));
-        });
+        querySelector('#pick-pixel').onClick.listen((e) =>
+            canvas.pickPixel().then((pixel) =>
+                print('pickPixel: '
+                    'x:${pixel.x}, '
+                    'y:${pixel.y}, '
+                    'color:${pixel.color}')));
       }
     </script>
   </head>
-  <body>
+  <body unresolved>
 
     <h1>Sample Usage <code>&lt;pixel-canvas&gt;</code></h1>
 

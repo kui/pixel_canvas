@@ -89,9 +89,9 @@ class PixelCanvasElement extends PolymerElement {
       new StreamController.broadcast();
   StreamController<PixelColorChangeEvent> _colorChangeEventsController =
       new StreamController.broadcast();
-  StreamController<PixelCanvesEvent> _beforeRenderingEventController =
+  StreamController<PixelCanvasEvent> _beforeRenderingEventController =
       new StreamController.broadcast();
-  StreamController<PixelCanvesEvent> _afterRenderingEventController =
+  StreamController<PixelCanvasEvent> _afterRenderingEventController =
       new StreamController.broadcast();
   StreamController<ActionChangeEvent> _actionChangeEventController =
       new StreamController.broadcast();
@@ -108,9 +108,9 @@ class PixelCanvasElement extends PolymerElement {
       _clickEventsController.stream;
   Stream<PixelColorChangeEvent> get onPixelColorChange =>
       _colorChangeEventsController.stream;
-  Stream<PixelCanvesEvent> get onBeforeRendering =>
+  Stream<PixelCanvasEvent> get onBeforeRendering =>
       _beforeRenderingEventController.stream;
-  Stream<PixelCanvesEvent> get onAfterRendering =>
+  Stream<PixelCanvasEvent> get onAfterRendering =>
       _afterRenderingEventController.stream;
   Stream<ActionChangeEvent> get onActionChange =>
       _actionChangeEventController.stream;
@@ -268,14 +268,14 @@ class PixelCanvasElement extends PolymerElement {
 
   void renderImmediately() {
     _beforeRenderingEventController.add(
-        new PixelCanvesEvent('beforerendering', this));
+        new PixelCanvasEvent('beforerendering', this));
 
     final ctx = _canvasContext;
     _render(ctx);
     _rendererTimer = null;
 
     _afterRenderingEventController.add(
-        new PixelCanvesEvent('afterrendering', this));
+        new PixelCanvasEvent('afterrendering', this));
   }
 
   void _render(CanvasRenderingContext2D ctx) {
@@ -505,12 +505,12 @@ class Pixel {
   int get hashCode => (color.hashCode * 31 + point.hashCode) & 0x3fffffff;
 }
 
-class PixelCanvesEvent {
+class PixelCanvasEvent {
   final String type;
   final PixelCanvasElement canvas;
-  PixelCanvesEvent(this.type, this.canvas);
+  PixelCanvasEvent(this.type, this.canvas);
 }
-class PixelEvent extends PixelCanvesEvent{
+class PixelEvent extends PixelCanvasEvent{
   final Pixel pixel;
   PixelEvent(String type, PixelCanvasElement c, this.pixel): super(type, c);
 }
