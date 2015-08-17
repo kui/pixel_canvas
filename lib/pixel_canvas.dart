@@ -123,7 +123,9 @@ class PixelCanvasElement extends PolymerElement {
 
   @override
   ready() {
-    _canvas = shadowRoot.getElementsByTagName('canvas').first;
+    super.ready();
+
+    _canvas = shadowRoot.querySelector('canvas');
     _initCanvas();
 
     pixels = new Pixels.fromJson(text, verticalPixels, horizontalPixels);
