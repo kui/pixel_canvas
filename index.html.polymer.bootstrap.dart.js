@@ -6234,12 +6234,6 @@ JP:function(a){return a.createDocumentFragment()},
 Kb:function(a,b){return a.getElementById(b)},
 ek:function(a,b,c){return a.importNode(b,c)},
 ot:function(a,b){return a.querySelector(b)},
-gVl:function(a){return H.J(new W.vG(a,"click",!1),[null])},
-gVY:function(a){return H.J(new W.vG(a,"mousedown",!1),[null])},
-gf0:function(a){return H.J(new W.vG(a,"mousemove",!1),[null])},
-gxV:function(a){return H.J(new W.vG(a,"mouseout",!1),[null])},
-gZ7:function(a){return H.J(new W.vG(a,"mouseover",!1),[null])},
-gGg:function(a){return H.J(new W.vG(a,"mouseup",!1),[null])},
 Md:function(a,b){return new W.wz(a.querySelectorAll(b))},
 $isYN:1,
 "%":"XMLDocument;Document"},
@@ -6324,7 +6318,7 @@ $iszM:1,
 $isyN:1,
 $isQV:1},
 cv:{
-"^":"KV;xr:className},jO:id=,q5:tagName=,Wq:nextElementSibling=",
+"^":"KV;jO:id=,q5:tagName=,Wq:nextElementSibling=",
 gQg:function(a){return new W.i7(a)},
 Md:function(a,b){return new W.wz(a.querySelectorAll(b))},
 gwl:function(a){return P.T7(C.CD.zQ(a.clientLeft),C.CD.zQ(a.clientTop),C.CD.zQ(a.clientWidth),C.CD.zQ(a.clientHeight),null)},
@@ -6345,7 +6339,6 @@ do{if(J.RF(z,b))return!0
 z=z.parentElement}while(z!=null)
 return!1},
 er:function(a){return(a.createShadowRoot||a.webkitCreateShadowRoot).call(a)},
-Zi:function(a){return a.getBoundingClientRect()},
 ot:function(a,b){return a.querySelector(b)},
 gi9:function(a){return H.J(new W.eu(a,"change",!1),[null])},
 gVl:function(a){return H.J(new W.eu(a,"click",!1),[null])},
@@ -6406,8 +6399,6 @@ p:function(a,b){if(b>>>0!==b||b>=a.length)throw H.b(P.Cf(b,a,null,null,null))
 return a[b]},
 q:function(a,b,c){throw H.b(new P.ub("Cannot assign element of immutable List."))},
 sv:function(a,b){throw H.b(new P.ub("Cannot resize immutable List."))},
-gtH:function(a){if(a.length>0)return a[0]
-throw H.b(new P.lj("No elements"))},
 grh:function(a){var z=a.length
 if(z>0)return a[z-1]
 throw H.b(new P.lj("No elements"))},
@@ -6595,8 +6586,6 @@ p:function(a,b){if(b>>>0!==b||b>=a.length)throw H.b(P.Cf(b,a,null,null,null))
 return a[b]},
 q:function(a,b,c){throw H.b(new P.ub("Cannot assign element of immutable List."))},
 sv:function(a,b){throw H.b(new P.ub("Cannot resize immutable List."))},
-gtH:function(a){if(a.length>0)return a[0]
-throw H.b(new P.lj("No elements"))},
 grh:function(a){var z=a.length
 if(z>0)return a[z-1]
 throw H.b(new P.lj("No elements"))},
@@ -6971,7 +6960,7 @@ ee:{
 $isGv:1,
 $isa:1,
 "%":"SVGFEDiffuseLightingElement"},
-tr:{
+Ah:{
 "^":"Qm;fg:height=,yG:result=,N:width=,x=,y=",
 $isGv:1,
 $isa:1,
@@ -8561,7 +8550,7 @@ xc:{
 "^":"a;m0:Q<",
 Nh:["zj",function(a){this.Q=!0}],
 b7:["ND",function(a){this.Q=!1}],
-mB:["c1",function(a){J.Pw(this.gqN(this).RZ,"")}],
+mB:["c1",function(a){this.gqN(this).RZ.className=""}],
 Dw:function(a){},
 Sf:function(a){},
 NJ:function(a){},
@@ -8622,7 +8611,7 @@ y=new B.j3(y,S.V2(y.kX,z),!1)
 y.Q=this.Q
 return y},
 Ni:function(a){if(a==null)return
-if(this.b.Q.tg(0,a.b))J.Pw(this.a.RZ,"selected")}},
+if(this.b.Q.tg(0,a.b))this.a.RZ.className="selected"}},
 O9:{
 "^":"j3;c,d,a,b,Q",
 Dw:function(a){if(J.G2(a)===this.d)this.c=!0},
@@ -8673,10 +8662,10 @@ J.x5(y,x)},
 Ni:function(a){var z,y
 if(a==null)return
 z=a.b
-if(this.Q)J.Pw(this.a.RZ,"grabbing")
+if(this.Q)this.a.RZ.className="grabbing"
 else{y=this.a
-if(this.b.Q.tg(0,z))J.Pw(y.RZ,"selected")
-else J.Pw(y.RZ,"grab")}}},
+if(this.b.Q.tg(0,z))y.RZ.className="selected"
+else y.RZ.className="grab"}}},
 wK:{
 "^":"kA;",
 Nh:function(a){var z
@@ -8687,14 +8676,14 @@ J.x5(this.a,z)},
 mB:function(a){this.c1(a)
 this.Ni(a)},
 Ni:function(a){if(a==null)return
-if(this.b.Q.tg(0,a.b))J.Pw(this.a.RZ,"selected")}},
+if(this.b.Q.tg(0,a.b))this.a.RZ.className="selected"}},
 Sv:{
 "^":"wK;a,b,Q",
 jM:function(a){var z,y,x
 z=this.a
 y=a.Q
 x=S.oQ(z.kX,y)
-J.Pw(z.RZ,"selected")
+z.RZ.className="selected"
 return new B.Sv(z,x,!1)}},
 Tc:{
 "^":"wK;a,b,Q",
@@ -8702,12 +8691,12 @@ jM:function(a){var z,y,x
 z=this.a
 y=a.b
 x=S.qq(z.kX,y)
-J.Pw(z.RZ,"selected")
+z.RZ.className="selected"
 return new B.Tc(z,x,!1)}},
 Kg:{
 "^":"kA;a,b,Q",
 mB:function(a){this.c1(a)
-if(a!=null&&this.b.Q.tg(0,a.b))J.Pw(this.a.RZ,"selected")}},
+if(a!=null&&this.b.Q.tg(0,a.b))this.a.RZ.className="selected"}},
 BN:{
 "^":"Dq;qN:a>,b,Q",
 gCg:function(a){var z=this.b
@@ -8734,7 +8723,7 @@ if(a==null)return
 z=a.b
 y=this.b
 if(y.gcB(y).tg(0,z)){y=this.Q?"grabbing":"grab"
-J.Pw(this.a.RZ,y)}},
+this.a.RZ.className=y}},
 NJ:function(a){var z,y,x,w,v
 z=J.hy(this.a)
 y=J.Qc(z)
@@ -8811,7 +8800,8 @@ this.ct(a,C.L,z,b)},
 gRW:function(a){var z=a.S8
 return H.J(new P.Ik(z),[H.Kp(z,0)])},
 I9:function(a){var z
-a.RZ=J.bP((a.shadowRoot||a.webkitShadowRoot).getElementsByTagName("canvas"))
+this.Su(a)
+a.RZ=(a.shadowRoot||a.webkitShadowRoot).querySelector("canvas")
 this.qm(a)
 z=M.vN(a.textContent,this.gzr(a),this.gVr(a))
 a.kX=this.ct(a,C.U,a.kX,z)
@@ -8917,7 +8907,7 @@ ci:function(a,b){a.kX.zM(new B.Jg(a,b))},
 m6:function(a,b,c,d){if(this.gmM(a)!==!0)return
 a.kX.Tk(b,c,d)},
 h2:function(a,b){var z,y,x,w,v,u,t
-z=J.Ah(a.RZ)
+z=a.RZ.getBoundingClientRect()
 y=J.Q5(b)
 x=J.RE(z)
 if(!x.xv(z,y))return
@@ -8954,12 +8944,12 @@ this.svh(a,new B.N4(null,a,S.V2(a.kX,[]),!1))},
 MP:function(a){var z
 if(this.gmM(a)!==!0)return
 z=S.V2(a.kX,[])
-J.Pw(a.RZ,"selected")
+a.RZ.className="selected"
 this.svh(a,new B.Sv(a,z,!1))},
 bu:function(a){var z
 if(this.gmM(a)!==!0)return
 z=S.V2(a.kX,[])
-J.Pw(a.RZ,"selected")
+a.RZ.className="selected"
 this.svh(a,new B.Tc(a,z,!1))},
 JJ:function(a,b){if(this.gmM(a)!==!0)return
 this.svh(a,new B.Kg(a,S.V2(a.kX,b),!1))},
@@ -9876,7 +9866,7 @@ this.z2(a,a.Q$)
 this.gQg(a).Rz(0,"unresolved")
 $.xP().To(new A.yG(a))
 this.I9(a)},
-I9:function(a){},
+I9:["Su",function(a){}],
 ig:function(a){if(a.Q$==null)throw H.b(new P.lj("polymerCreated was not called for custom element "+H.d(this.gS6(a))+", this should normally be done in the .created() if Polymer is used as a mixin."))
 this.oW(a)
 if(!a.x$){a.x$=!0
@@ -12578,7 +12568,6 @@ if(typeof a!="object")return a
 if(a instanceof P.a)return a
 return J.ks(a)}
 J.A6=function(a){return J.RE(a).gG3(a)}
-J.Ah=function(a){return J.RE(a).Zi(a)}
 J.B2=function(a){return J.RE(a).gIB(a)}
 J.BR=function(a,b){return J.RE(a).sIv(a,b)}
 J.Ba=function(a){return J.RE(a).py(a)}
@@ -12644,7 +12633,6 @@ J.OC=function(a){return J.RE(a).gCn(a)}
 J.Ow=function(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p){return J.RE(a).aA(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p)}
 J.PB=function(a,b){return J.RE(a).Bf(a,b)}
 J.PK=function(a){return J.RE(a).gdA(a)}
-J.Pw=function(a,b){return J.RE(a).sxr(a,b)}
 J.Q1=function(a,b){return J.Wx(a).L(a,b)}
 J.Q5=function(a){return J.RE(a).gwl(a)}
 J.QM=function(a,b){return J.RE(a).Rg(a,b)}
@@ -12681,7 +12669,6 @@ J.aF=function(a,b){if(typeof a=="number"&&typeof b=="number")return a-b
 return J.Wx(a).T(a,b)}
 J.aq=function(a){return J.RE(a).gos(a)}
 J.bB=function(a){return J.t(a).gbx(a)}
-J.bP=function(a){return J.w1(a).gtH(a)}
 J.bZ=function(a){return J.RE(a).eh(a)}
 J.bs=function(a){return J.RE(a).JP(a)}
 J.bu=function(a){return J.RE(a).gKV(a)}

@@ -5961,21 +5961,15 @@ JP:function(a){return a.createDocumentFragment()},
 Kb:function(a,b){return a.getElementById(b)},
 ek:function(a,b,c){return a.importNode(b,c)},
 Wk:function(a,b){return a.querySelector(b)},
-gVl:function(a){return H.J(new W.RO(a,"click",!1),[null])},
-gVY:function(a){return H.J(new W.RO(a,"mousedown",!1),[null])},
-gf0:function(a){return H.J(new W.RO(a,"mousemove",!1),[null])},
-gxV:function(a){return H.J(new W.RO(a,"mouseout",!1),[null])},
-gZ7:function(a){return H.J(new W.RO(a,"mouseover",!1),[null])},
-gGg:function(a){return H.J(new W.RO(a,"mouseup",!1),[null])},
 Md:function(a,b){return new W.wz(a.querySelectorAll(b))},
 $isYN:1,
 "%":"XMLDocument;Document"},
-Aj:{
+iG:{
 "^":"KV;",
 Md:function(a,b){return new W.wz(a.querySelectorAll(b))},
 Kb:function(a,b){return a.getElementById(b)},
 Wk:function(a,b){return a.querySelector(b)},
-$isAj:1,
+$isiG:1,
 $isKV:1,
 $isa:1,
 $isGv:1,
@@ -6051,7 +6045,7 @@ $isW:1,
 $isqC:1,
 $isQV:1},
 cv:{
-"^":"KV;xr:className},jO:id=,q5:tagName=,Wq:nextElementSibling=",
+"^":"KV;jO:id=,q5:tagName=,Wq:nextElementSibling=",
 gQg:function(a){return new W.i7(a)},
 Md:function(a,b){return new W.wz(a.querySelectorAll(b))},
 gwl:function(a){return P.T7(C.CD.P5(a.clientLeft),C.CD.P5(a.clientTop),C.CD.P5(a.clientWidth),C.CD.P5(a.clientHeight),null)},
@@ -6072,7 +6066,6 @@ do{if(J.UK(z,b))return!0
 z=z.parentElement}while(z!=null)
 return!1},
 er:function(a){return(a.createShadowRoot||a.webkitCreateShadowRoot).call(a)},
-Zi:function(a){return a.getBoundingClientRect()},
 Wk:function(a,b){return a.querySelector(b)},
 gVl:function(a){return H.J(new W.eu(a,"click",!1),[null])},
 gVY:function(a){return H.J(new W.eu(a,"mousedown",!1),[null])},
@@ -6128,8 +6121,6 @@ p:function(a,b){if(b>>>0!==b||b>=a.length)throw H.b(P.Cf(b,a,null,null,null))
 return a[b]},
 q:function(a,b,c){throw H.b(new P.ub("Cannot assign element of immutable List."))},
 sv:function(a,b){throw H.b(new P.ub("Cannot resize immutable List."))},
-gtH:function(a){if(a.length>0)return a[0]
-throw H.b(new P.lj("No elements"))},
 grh:function(a){var z=a.length
 if(z>0)return a[z-1]
 throw H.b(new P.lj("No elements"))},
@@ -6232,10 +6223,10 @@ wR:function(a,b){return a.send(b)},
 eC:{
 "^":"D0;jO:id=,oc:name=",
 "%":"MIDIInput;MIDIPort"},
-v3:{
+Aj:{
 "^":"QG;",
 gwl:function(a){return H.J(new P.hL(a.clientX,a.clientY),[null])},
-$isv3:1,
+$isAj:1,
 $isa:1,
 "%":"DragEvent|MSPointerEvent|MouseEvent|PointerEvent|WheelEvent"},
 Wg:{
@@ -6308,8 +6299,6 @@ p:function(a,b){if(b>>>0!==b||b>=a.length)throw H.b(P.Cf(b,a,null,null,null))
 return a[b]},
 q:function(a,b,c){throw H.b(new P.ub("Cannot assign element of immutable List."))},
 sv:function(a,b){throw H.b(new P.ub("Cannot resize immutable List."))},
-gtH:function(a){if(a.length>0)return a[0]
-throw H.b(new P.lj("No elements"))},
 grh:function(a){var z=a.length
 if(z>0)return a[z-1]
 throw H.b(new P.lj("No elements"))},
@@ -6363,9 +6352,9 @@ lp:{
 "^":"qE;v:length%,oc:name=,M:value%",
 "%":"HTMLSelectElement"},
 I0:{
-"^":"Aj;",
+"^":"iG;",
 $isI0:1,
-$isAj:1,
+$isiG:1,
 $isKV:1,
 $isa:1,
 "%":"ShadowRoot"},
@@ -7183,7 +7172,7 @@ $asQV:function(){return[P.KN]},
 "%":"Int8Array"},
 dT:{
 "^":"Pg;",
-gbx:function(a){return C.iG},
+gbx:function(a){return C.iN},
 p:function(a,b){var z=a.length
 if(b>>>0!==b||b>=z)this.aq(a,b,z)
 return a[b]},
@@ -8218,7 +8207,7 @@ return $.uE}}}}],["","",,B,{
 z1:{
 "^":"a;",
 Nh:["zj",function(a){this.Q=!0}],
-mB:["c1",function(a){J.Pw(this.gqN(this).RZ,"")}],
+mB:["c1",function(a){this.gqN(this).RZ.className=""}],
 Dw:function(a){},
 Sf:function(a){},
 K2:function(a){}},
@@ -8278,7 +8267,7 @@ y=new B.j3(y,S.V2(y.kX,z),!1)
 y.Q=this.Q
 return y},
 Ni:function(a){if(a==null)return
-if(this.b.Q.tg(0,a.b))J.Pw(this.a.RZ,"selected")}},
+if(this.b.Q.tg(0,a.b))this.a.RZ.className="selected"}},
 O9:{
 "^":"j3;c,d,a,b,Q",
 Dw:function(a){if(J.uk(a)===this.d)this.c=!0},
@@ -8316,7 +8305,8 @@ svh:function(a,b){var z=a.ca
 a.ca=b
 this.ct(a,C.Gh,z,b)},
 I9:function(a){var z
-a.RZ=J.iN((a.shadowRoot||a.webkitShadowRoot).getElementsByTagName("canvas"))
+this.Su(a)
+a.RZ=(a.shadowRoot||a.webkitShadowRoot).querySelector("canvas")
 this.ky(a)
 z=M.vN(a.textContent,this.gzr(a),this.gZF(a))
 a.kX=this.ct(a,C.b4,a.kX,z)
@@ -8400,7 +8390,7 @@ ci:function(a,b){a.kX.zM(new B.Jg(a,b))},
 m6:function(a,b,c,d){if(this.gmM(a)!==!0)return
 a.kX.Tk(b,c,d)},
 Yg:function(a,b){var z,y,x,w,v,u,t
-z=J.Ah(a.RZ)
+z=a.RZ.getBoundingClientRect()
 y=J.Lb(b)
 x=J.RE(z)
 if(!x.xv(z,y))return
@@ -9019,7 +9009,7 @@ this.z2(a,a.b$)
 this.gQg(a).Rz(0,"unresolved")
 $.xP().To(new A.yG(a))
 this.I9(a)},
-I9:function(a){},
+I9:["Su",function(a){}],
 ig:function(a){if(a.b$==null)throw H.b(new P.lj("polymerCreated was not called for custom element "+H.d(this.gRT(a))+", this should normally be done in the .created() if Polymer is used as a mixin."))
 this.oW(a)
 if(!a.z$){a.z$=!0
@@ -9625,10 +9615,10 @@ w=C.OL
 v=!1}else if(!!y.$iszX){w=a.ghP()
 x=a.gJn()
 v=!0}else{if(!!y.$isx9){w=a.ghP()
-x=y.goc(a)}else{if(d)throw H.b(new K.Os("Expression is not assignable: "+H.d(a)))
+x=y.goc(a)}else{if(d)throw H.b(new K.Ah("Expression is not assignable: "+H.d(a)))
 return}v=!1}for(;0<z.length;){u=z[0]
 J.CX(u,new K.GQ(c))
-if(d)throw H.b(new K.Os("filter must implement Transformer to be assignable: "+H.d(u)))
+if(d)throw H.b(new K.Ah("filter must implement Transformer to be assignable: "+H.d(u)))
 else return}t=J.CX(w,new K.GQ(c))
 if(t==null)return
 if(v)J.C7(t,J.CX(x,new K.GQ(c)),b)
@@ -9637,7 +9627,7 @@ return b},
 xV:function(a,b){var z,y
 z=P.T6(b,P.I,P.a)
 y=new K.Ph(new K.ug(a),z)
-if(z.x4("this"))H.vh(new K.Os("'this' cannot be used as a variable name."))
+if(z.x4("this"))H.vh(new K.Ah("'this' cannot be used as a variable name."))
 z=y
 return z},
 wJY:{
@@ -9690,7 +9680,7 @@ w12:{
 $2:function(a,b){var z=H.Og(P.a)
 z=H.KT(z,[z]).Zg(b)
 if(z)return b.$1(a)
-throw H.b(new K.Os("Filters must be a one-argument function."))}},
+throw H.b(new K.Ah("Filters must be a one-argument function."))}},
 w13:{
 "^":"r:3;",
 $1:function(a){return a}},
@@ -9703,7 +9693,7 @@ $1:function(a){return a!==!0}},
 z6:{
 "^":"a;",
 q:function(a,b,c){throw H.b(new P.ub("[]= is not supported in Scope."))},
-Ek:function(a,b){if(J.mG(a,"this"))H.vh(new K.Os("'this' cannot be used as a variable name."))
+Ek:function(a,b){if(J.mG(a,"this"))H.vh(new K.Ah("'this' cannot be used as a variable name."))
 return new K.bp(this,a,b)},
 $isDE:1,
 $asDE:function(){return[P.I,P.a]}},
@@ -9833,7 +9823,7 @@ w=this.gnG()
 x.toString
 y=H.J(new H.A8(x,w),[null,null]).tt(0,!1)}v=new K.xJ(z,y,a,null,null,null,P.bK(null,null,!1,null))
 z.sHg(v)
-if(y!=null)C.Nm.aN(y,new K.uu(v))
+if(y!=null)C.Nm.aN(y,new K.Os(v))
 return v},
 I6:function(a){return new K.z0(a,null,null,null,P.bK(null,null,!1,null))},
 Zh:function(a){var z,y
@@ -9877,7 +9867,7 @@ x.sHg(w)
 return w},
 MV:function(a){throw H.b(new P.ub("can't eval an 'in' expression"))},
 eS:function(a){throw H.b(new P.ub("can't eval an 'as' expression"))}},
-uu:{
+Os:{
 "^":"r:3;Q",
 $1:function(a){var z=this.Q
 a.sHg(z)
@@ -10047,7 +10037,7 @@ $ishw:1},
 BG:{
 "^":"r:3;",
 $1:[function(a){return a.gLv()},null,null,2,0,null,33,"call"]},
-Os:{
+Ah:{
 "^":"a;Q",
 X:function(a){return"EvalException: "+this.Q}}}],["","",,U,{
 "^":"",
@@ -11430,7 +11420,6 @@ if(a.constructor==Array)return J.G.prototype
 if(typeof a!="object")return a
 if(a instanceof P.a)return a
 return J.ks(a)}
-J.Ah=function(a){return J.RE(a).Zi(a)}
 J.C5=function(a){return J.RE(a).gCd(a)}
 J.C7=function(a,b,c){if((a.constructor==Array||H.wV(a,a[init.dispatchPropertyName]))&&!a.immutable$list&&b>>>0===b&&b<a.length)return a[b]=c
 return J.w1(a).q(a,b,c)}
@@ -11471,7 +11460,6 @@ J.OB=function(a){return J.RE(a).gfg(a)}
 J.OC=function(a){return J.RE(a).gCn(a)}
 J.PB=function(a,b){return J.RE(a).Bf(a,b)}
 J.PK=function(a){return J.RE(a).gdA(a)}
-J.Pw=function(a,b){return J.RE(a).sxr(a,b)}
 J.Q1=function(a,b){return J.Wx(a).L(a,b)}
 J.QE=function(a){return J.RE(a).gJS(a)}
 J.QM=function(a,b){return J.RE(a).Rg(a,b)}
@@ -11511,7 +11499,6 @@ J.fa=function(a){return J.RE(a).gMj(a)}
 J.hU=function(a){return J.RE(a).gDH(a)}
 J.hq=function(a,b,c,d){return J.RE(a).On(a,b,c,d)}
 J.i4=function(a,b){return J.w1(a).Zv(a,b)}
-J.iN=function(a){return J.w1(a).gtH(a)}
 J.j0=function(a,b){return J.RE(a).sM5(a,b)}
 J.jV=function(a,b){return J.RE(a).wR(a,b)}
 J.jd=function(a){return J.RE(a).gZm(a)}
@@ -11813,7 +11800,7 @@ C.yT=H.K('FK')
 C.la=H.K('ZX')
 C.O4=H.K('CP')
 C.OD=H.K('KN')
-C.iG=H.K('yc')
+C.iN=H.K('yc')
 C.UL=H.K('rF')
 C.nG=H.K('zt')
 C.Ev=H.K('Un')
@@ -11899,7 +11886,7 @@ return z!=null?J.Tf(z,"ShadowCSS"):null},"dz","Es",function(){return N.Jx("polym
 I=I.$finishIsolateConstructor(I)
 $=new I()
 init.metadata=["invocation","object","sender","e","x","closure","isolate","numberOfArguments","arg1","arg2","arg3","arg4","each","value",null,"error","stackTrace","self","parent","zone","f","arg","duration","callback","line","specification","zoneValues","_","data","theError","theStackTrace","ignored","element","a","k","v","byteString","receiver","name","oldValue","newValue","captureThis","arguments","o","i","records","event","mouseEvent","p","symbol","model","node","oneTime","wait","jsElem","extendee","rec","timer",!1,"skipChanges","s","changes","iterable","ref","ifValue","values"]
-init.types=[{func:1},{func:1,void:true,args:[,P.Bp]},{func:1,void:true},{func:1,args:[,]},{func:1,args:[P.I,,]},{func:1,args:[,P.I]},{func:1,args:[P.I]},{func:1,args:[{func:1,void:true}]},{func:1,void:true,args:[,,]},{func:1,args:[P.a]},{func:1,void:true,args:[,],opt:[P.Bp]},{func:1,args:[,],opt:[,]},{func:1,ret:P.a2},{func:1,args:[P.a2]},{func:1,args:[,P.Bp]},{func:1,args:[P.JB,,P.Bp]},{func:1,args:[P.JB,{func:1}]},{func:1,args:[P.JB,{func:1,args:[,]},,]},{func:1,args:[P.JB,{func:1,args:[,,]},,,]},{func:1,ret:{func:1},args:[P.JB,{func:1}]},{func:1,ret:{func:1,args:[,]},args:[P.JB,{func:1,args:[,]}]},{func:1,ret:{func:1,args:[,,]},args:[P.JB,{func:1,args:[,,]}]},{func:1,ret:P.OH,args:[P.JB,P.a,P.Bp]},{func:1,void:true,args:[P.JB,{func:1}]},{func:1,ret:P.dX,args:[P.JB,P.a6,{func:1,void:true}]},{func:1,ret:P.dX,args:[P.JB,P.a6,{func:1,void:true,args:[P.dX]}]},{func:1,void:true,args:[P.JB,P.I]},{func:1,ret:P.JB,args:[P.JB,P.wZ,P.w]},{func:1,ret:P.JB,named:{specification:P.wZ,zoneValues:P.w}},{func:1,args:[{func:1}]},{func:1,args:[{func:1,args:[,]},,]},{func:1,args:[{func:1,args:[,,]},,,]},{func:1,ret:{func:1},args:[{func:1}]},{func:1,ret:{func:1,args:[,]},args:[{func:1,args:[,]}]},{func:1,ret:{func:1,args:[,,]},args:[{func:1,args:[,,]}]},{func:1,ret:P.OH,args:[P.a,P.Bp]},{func:1,void:true,args:[{func:1,void:true}]},{func:1,ret:P.dX,args:[P.a6,{func:1,void:true}]},{func:1,ret:P.dX,args:[P.a6,{func:1,void:true,args:[P.dX]}]},{func:1,void:true,args:[P.I]},{func:1,args:[,,]},{func:1,args:[P.wv,,]},{func:1,ret:P.I,args:[P.KN]},{func:1,ret:P.KN,args:[,,]},{func:1,void:true,args:[P.I],opt:[,]},{func:1,ret:P.KN,args:[P.KN,P.KN]},{func:1,ret:P.a2,args:[[P.hL,P.FK]]},{func:1,ret:P.KN,args:[,]},{func:1,args:[P.KN]},{func:1,args:[P.KN,,]},{func:1,args:[P.e4,P.JB]},{func:1,args:[P.JB,P.e4,P.JB,{func:1}]},{func:1,args:[P.JB,P.e4,P.JB,{func:1,args:[,]}]},{func:1,void:true,args:[P.a,P.a]},{func:1,void:true,args:[,]},{func:1,args:[W.v3]},{func:1,void:true,args:[W.XF]},{func:1,args:[,,,]},{func:1,args:[[P.W,O.WP]]},{func:1,args:[L.Tv,,]},{func:1,void:true,args:[P.I,P.I]},{func:1,void:true,args:[P.W,P.w,P.W]},{func:1,void:true,args:[[P.W,T.yj]]},{func:1,void:true,args:[{func:1,void:true}],opt:[P.a6]},{func:1,args:[,P.I,P.I]},{func:1,args:[P.dX]},{func:1,args:[,W.KV,P.a2]},{func:1,ret:P.a2,args:[,],named:{skipChanges:P.a2}},{func:1,args:[U.hw]},{func:1,void:true,args:[W.Aj]},{func:1,ret:P.I,args:[P.a]},{func:1,ret:P.I,args:[[P.W,P.a]]},{func:1,void:true,args:[P.JB,P.e4,P.JB,,P.Bp]},{func:1,args:[P.JB,P.e4,P.JB,{func:1,args:[,]},,]},{func:1,args:[P.JB,P.e4,P.JB,{func:1,args:[,,]},,,]},{func:1,ret:{func:1},args:[P.JB,P.e4,P.JB,{func:1}]},{func:1,ret:{func:1,args:[,]},args:[P.JB,P.e4,P.JB,{func:1,args:[,]}]},{func:1,ret:{func:1,args:[,,]},args:[P.JB,P.e4,P.JB,{func:1,args:[,,]}]},{func:1,ret:P.OH,args:[P.JB,P.e4,P.JB,P.a,P.Bp]},{func:1,void:true,args:[P.JB,P.e4,P.JB,{func:1}]},{func:1,ret:P.dX,args:[P.JB,P.e4,P.JB,P.a6,{func:1,void:true}]},{func:1,ret:P.dX,args:[P.JB,P.e4,P.JB,P.a6,{func:1,void:true,args:[P.dX]}]},{func:1,void:true,args:[P.JB,P.e4,P.JB,P.I]},{func:1,ret:P.JB,args:[P.JB,P.e4,P.JB,P.wZ,P.w]},{func:1,ret:P.a2,args:[,,]},{func:1,ret:P.a2,args:[P.a,P.a]},{func:1,ret:P.KN,args:[P.a]},{func:1,args:[,,,,]},{func:1,ret:P.a,args:[,]},{func:1,ret:P.a2,args:[P.wv]},{func:1,ret:[P.QV,K.Ae],args:[P.QV]}]
+init.types=[{func:1},{func:1,void:true,args:[,P.Bp]},{func:1,void:true},{func:1,args:[,]},{func:1,args:[P.I,,]},{func:1,args:[,P.I]},{func:1,args:[P.I]},{func:1,args:[{func:1,void:true}]},{func:1,void:true,args:[,,]},{func:1,args:[P.a]},{func:1,void:true,args:[,],opt:[P.Bp]},{func:1,args:[,],opt:[,]},{func:1,ret:P.a2},{func:1,args:[P.a2]},{func:1,args:[,P.Bp]},{func:1,args:[P.JB,,P.Bp]},{func:1,args:[P.JB,{func:1}]},{func:1,args:[P.JB,{func:1,args:[,]},,]},{func:1,args:[P.JB,{func:1,args:[,,]},,,]},{func:1,ret:{func:1},args:[P.JB,{func:1}]},{func:1,ret:{func:1,args:[,]},args:[P.JB,{func:1,args:[,]}]},{func:1,ret:{func:1,args:[,,]},args:[P.JB,{func:1,args:[,,]}]},{func:1,ret:P.OH,args:[P.JB,P.a,P.Bp]},{func:1,void:true,args:[P.JB,{func:1}]},{func:1,ret:P.dX,args:[P.JB,P.a6,{func:1,void:true}]},{func:1,ret:P.dX,args:[P.JB,P.a6,{func:1,void:true,args:[P.dX]}]},{func:1,void:true,args:[P.JB,P.I]},{func:1,ret:P.JB,args:[P.JB,P.wZ,P.w]},{func:1,ret:P.JB,named:{specification:P.wZ,zoneValues:P.w}},{func:1,args:[{func:1}]},{func:1,args:[{func:1,args:[,]},,]},{func:1,args:[{func:1,args:[,,]},,,]},{func:1,ret:{func:1},args:[{func:1}]},{func:1,ret:{func:1,args:[,]},args:[{func:1,args:[,]}]},{func:1,ret:{func:1,args:[,,]},args:[{func:1,args:[,,]}]},{func:1,ret:P.OH,args:[P.a,P.Bp]},{func:1,void:true,args:[{func:1,void:true}]},{func:1,ret:P.dX,args:[P.a6,{func:1,void:true}]},{func:1,ret:P.dX,args:[P.a6,{func:1,void:true,args:[P.dX]}]},{func:1,void:true,args:[P.I]},{func:1,args:[,,]},{func:1,args:[P.wv,,]},{func:1,ret:P.I,args:[P.KN]},{func:1,ret:P.KN,args:[,,]},{func:1,void:true,args:[P.I],opt:[,]},{func:1,ret:P.KN,args:[P.KN,P.KN]},{func:1,ret:P.a2,args:[[P.hL,P.FK]]},{func:1,ret:P.KN,args:[,]},{func:1,args:[P.KN]},{func:1,args:[P.KN,,]},{func:1,args:[P.e4,P.JB]},{func:1,args:[P.JB,P.e4,P.JB,{func:1}]},{func:1,args:[P.JB,P.e4,P.JB,{func:1,args:[,]}]},{func:1,void:true,args:[P.a,P.a]},{func:1,void:true,args:[,]},{func:1,args:[W.Aj]},{func:1,void:true,args:[W.XF]},{func:1,args:[,,,]},{func:1,args:[[P.W,O.WP]]},{func:1,args:[L.Tv,,]},{func:1,void:true,args:[P.I,P.I]},{func:1,void:true,args:[P.W,P.w,P.W]},{func:1,void:true,args:[[P.W,T.yj]]},{func:1,void:true,args:[{func:1,void:true}],opt:[P.a6]},{func:1,args:[,P.I,P.I]},{func:1,args:[P.dX]},{func:1,args:[,W.KV,P.a2]},{func:1,ret:P.a2,args:[,],named:{skipChanges:P.a2}},{func:1,args:[U.hw]},{func:1,void:true,args:[W.iG]},{func:1,ret:P.I,args:[P.a]},{func:1,ret:P.I,args:[[P.W,P.a]]},{func:1,void:true,args:[P.JB,P.e4,P.JB,,P.Bp]},{func:1,args:[P.JB,P.e4,P.JB,{func:1,args:[,]},,]},{func:1,args:[P.JB,P.e4,P.JB,{func:1,args:[,,]},,,]},{func:1,ret:{func:1},args:[P.JB,P.e4,P.JB,{func:1}]},{func:1,ret:{func:1,args:[,]},args:[P.JB,P.e4,P.JB,{func:1,args:[,]}]},{func:1,ret:{func:1,args:[,,]},args:[P.JB,P.e4,P.JB,{func:1,args:[,,]}]},{func:1,ret:P.OH,args:[P.JB,P.e4,P.JB,P.a,P.Bp]},{func:1,void:true,args:[P.JB,P.e4,P.JB,{func:1}]},{func:1,ret:P.dX,args:[P.JB,P.e4,P.JB,P.a6,{func:1,void:true}]},{func:1,ret:P.dX,args:[P.JB,P.e4,P.JB,P.a6,{func:1,void:true,args:[P.dX]}]},{func:1,void:true,args:[P.JB,P.e4,P.JB,P.I]},{func:1,ret:P.JB,args:[P.JB,P.e4,P.JB,P.wZ,P.w]},{func:1,ret:P.a2,args:[,,]},{func:1,ret:P.a2,args:[P.a,P.a]},{func:1,ret:P.KN,args:[P.a]},{func:1,args:[,,,,]},{func:1,ret:P.a,args:[,]},{func:1,ret:P.a2,args:[P.wv]},{func:1,ret:[P.QV,K.Ae],args:[P.QV]}]
 function convertToFastObject(a){function MyClass(){}MyClass.prototype=a
 new MyClass()
 return a}function convertToSlowObject(a){a.__MAGIC_SLOW_PROPERTY=1
