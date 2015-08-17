@@ -1,3 +1,4 @@
+@HtmlImport('pixel_canvas.html')
 library pixel_canvas.element;
 
 import 'dart:html';
